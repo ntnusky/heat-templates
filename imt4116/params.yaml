@@ -1,0 +1,5 @@
+parameters:
+  key_name: <key-name>
+  fileserver_image: <image for fileserver>
+  remnux_image: <image for remnux>
+  windows_image: <image for windows client>

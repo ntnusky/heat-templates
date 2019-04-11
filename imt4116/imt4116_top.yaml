@@ -1,0 +1,210 @@
+heat_template_version: 2013-05-23
+
+description: >
+  HOT template to create a simple malware analysis platform
+  for IMT4116. It creates a Remnux VM and Windows VM with
+  pre-installed tools. These are connected to a isolated network,
+  not connected to any external nets (since we are running malware,
+  it needs isolation.) In addition the template creates a jump-host
+  fileserver both connected to the isolated network, and to an
+  external net, to be able to transfer files.
+
+parameters:
+  key_name:
+    type: string
+    description: Name of keypair
+  public_net:
+    type: string
+    description: Name of public net
+    default: ntnu-internal
+  host_only_net_cidr:
+    type: string
+    description: CIDR for host-only network
+    default: 192.168.10.0/24
+  fileserver_image:
+    type: string
+    description: Name of fileserver image
+  fileserver_flavor:
+    type: string
+    description: Name of fileserver flavor
+    default: m1.tiny
+  remnux_image:
+    type: string
+    description: Name of remnux image
+  remnux_flavor:
+    type: string
+    description: Name of flavor for remnux server
+    default: m1.tiny
+  windows_image:
+    type: string
+    description: Name of windows image
+  windows_flavor:
+    type: string
+    description: Name of windows flavor
+    default: m1.medium
+
+resources:
+##### Networks, subnets and routers
+
+  host_only_net:
+    type: OS::Neutron::Net
+    properties:
+      name: host-only-net
+
+  host_only_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: host_only_net }
+      cidr: { get_param: host_only_net_cidr }
+      gateway_ip: 192.168.10.1
+      dns_nameservers: [192.168.10.1]
+      allocation_pools:
+        - start: 192.168.10.2
+          end: 192.168.10.99
+
+  remnux_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: host_only_net }
+      fixed_ips: [
+        {
+          "subnet": { get_resource: host_only_subnet },
+          "ip_address": 192.168.10.1
+        }
+      ]
+
+  nat_net:
+    type: OS::Neutron::Net
+    properties:
+      name: nat-net
+
+  nat_net_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: nat_net }
+      cidr: 192.168.0.0/29
+      gateway_ip: 192.168.0.1
+      allocation_pools:
+        - start: 192.168.0.2
+          end: 192.168.0.6
+
+  nat_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: { get_param: public_net }
+
+  nat_router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: nat_router }
+      subnet_id: { get_resource: nat_net_subnet }
+
+##### Security groups #####
+
+  sg_fileserver:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: sg_fileserver
+  sgr_ssh:
+    type: OS::Neutron::SecurityGroupRule
+    properties:
+      security_group: { get_resource: sg_fileserver }
+      port_range_min: 22
+      port_range_max: 22
+      remote_ip_prefix: 0.0.0.0/0
+
+##### Servers #####
+
+  remnux_os_disk:
+    type: OS::Cinder::Volume
+    properties:
+      name: remnux-root-disk
+      image: { get_param: remnux_image }
+      size: 25
+
+  remnux_server:
+    type: OS::Nova::Server
+    properties:
+      name: remnux
+      flavor: { get_param: remnux_flavor }
+      # For now not needed. Not running cloud-init
+      #key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: remnux_port }
+      block_device_mapping: [
+        {
+          "device_name": vda,
+          "delete_on_termination": true,
+          "volume_id": { get_resource: remnux_os_disk }
+        }
+      ]
+
+  windows_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: host_only_net }
+      fixed_ips:
+        - subnet_id: { get_resource: host_only_subnet }
+
+  windows_os_disk:
+    type: OS::Cinder::Volume
+    properties:
+      name: windows-root-disk
+      image: { get_param: windows_image }
+      size: 65
+
+  windows_client:
+    type: OS::Nova::Server
+    properties:
+      name: windows
+      flavor: { get_param: windows_flavor }
+      # For now not needed. Not running cloud-init
+      #key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: windows_port }
+      block_device_mapping: [
+        {
+          "device_name": vda,
+          "delete_on_termination": true,
+          "volume_id": { get_resource: windows_os_disk }
+        }
+      ]
+
+  fileserver_nat_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: nat_net }
+      security_groups: [{ get_resource: sg_fileserver }]
+      fixed_ips:
+        - subnet_id: { get_resource: nat_net_subnet }
+
+  fileserver_host_only_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: host_only_net }
+      fixed_ips: [
+        {
+          "subnet": { get_resource: host_only_subnet },
+          "ip_address": 192.168.10.100
+        }
+      ]
+
+  fileserver_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_net }
+      port_id: { get_resource: fileserver_nat_port }
+
+  fileserver:
+    type: OS::Nova::Server
+    properties:
+      name: fileserver
+      flavor: { get_param: fileserver_flavor }
+      key_name: { get_param: key_name }
+      image: { get_param: fileserver_image }
+      networks:
+        - port: { get_resource: fileserver_nat_port }
+        - port: { get_resource: fileserver_host_only_port }
+      user_data_format: RAW
+      user_data: { get_file: scripts/fileserver-setup.sh }
