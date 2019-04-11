@@ -208,3 +208,9 @@ resources:
         - port: { get_resource: fileserver_host_only_port }
       user_data_format: RAW
       user_data: { get_file: scripts/fileserver-setup.sh }
+
+##### Outputs
+outputs:
+  fileserver_ip:
+    description: IP address for fileserver
+    value: { get_attr: [ fileserver_floating_ip, floating_ip_address ] }
