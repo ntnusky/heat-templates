@@ -27,21 +27,21 @@ parameters:
   fileserver_flavor:
     type: string
     description: Name of fileserver flavor
-    default: m1.tiny
+    default: gx1.1c2r
   remnux_image:
     type: string
     description: Name of remnux image
   remnux_flavor:
     type: string
     description: Name of flavor for remnux server
-    default: m1.tiny
+    default: gx1.1c2r
   windows_image:
     type: string
     description: Name of windows image
   windows_flavor:
     type: string
     description: Name of windows flavor
-    default: m1.medium
+    default: gx1.2c2r
 
 resources:
 ##### Networks, subnets and routers
@@ -121,7 +121,7 @@ resources:
     properties:
       name: remnux-root-disk
       image: { get_param: remnux_image }
-      size: 25
+      size: 40
 
   remnux_server:
     type: OS::Nova::Server
@@ -152,7 +152,7 @@ resources:
     properties:
       name: windows-root-disk
       image: { get_param: windows_image }
-      size: 65
+      size: 45
 
   windows_client:
     type: OS::Nova::Server
