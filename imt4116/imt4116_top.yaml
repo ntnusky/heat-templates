@@ -116,29 +116,30 @@ resources:
 
 ##### Servers #####
 
-  remnux_os_disk:
-    type: OS::Cinder::Volume
-    properties:
-      name: remnux-root-disk
-      image: { get_param: remnux_image }
-      size: 40
+#  remnux_os_disk:
+#    type: OS::Cinder::Volume
+#    properties:
+#      name: remnux-root-disk
+#      image: { get_param: remnux_image }
+#      size: 40
 
   remnux_server:
     type: OS::Nova::Server
     properties:
       name: remnux
+      image: { get_param: remnux_image }
       flavor: { get_param: remnux_flavor }
       # For now not needed. Not running cloud-init
       #key_name: { get_param: key_name }
       networks:
         - port: { get_resource: remnux_port }
-      block_device_mapping: [
-        {
-          "device_name": vda,
-          "delete_on_termination": true,
-          "volume_id": { get_resource: remnux_os_disk }
-        }
-      ]
+#      block_device_mapping: [
+#        {
+#          "device_name": vda,
+#          "delete_on_termination": true,
+#          "volume_id": { get_resource: remnux_os_disk }
+#        }
+#      ]
 
   windows_port:
     type: OS::Neutron::Port
@@ -147,29 +148,30 @@ resources:
       fixed_ips:
         - subnet_id: { get_resource: host_only_subnet }
 
-  windows_os_disk:
-    type: OS::Cinder::Volume
-    properties:
-      name: windows-root-disk
-      image: { get_param: windows_image }
-      size: 45
+#  windows_os_disk:
+#    type: OS::Cinder::Volume
+#    properties:
+#      name: windows-root-disk
+#      image: { get_param: windows_image }
+#      size: 40
 
   windows_client:
     type: OS::Nova::Server
     properties:
       name: windows
+      image: { get_param: windows_image }
       flavor: { get_param: windows_flavor }
       # For now not needed. Not running cloud-init
       #key_name: { get_param: key_name }
       networks:
         - port: { get_resource: windows_port }
-      block_device_mapping: [
-        {
-          "device_name": vda,
-          "delete_on_termination": true,
-          "volume_id": { get_resource: windows_os_disk }
-        }
-      ]
+#      block_device_mapping: [
+#        {
+#          "device_name": vda,
+#          "delete_on_termination": true,
+#          "volume_id": { get_resource: windows_os_disk }
+#        }
+#      ]
 
   fileserver_nat_port:
     type: OS::Neutron::Port
