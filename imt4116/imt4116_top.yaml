@@ -20,7 +20,7 @@ parameters:
   host_only_net_cidr:
     type: string
     description: CIDR for host-only network
-    default: 10.10.10.0/24
+    default: 10.0.0.0/24
   fileserver_image:
     type: string
     description: Name of fileserver image
@@ -56,23 +56,11 @@ resources:
     properties:
       network_id: { get_resource: host_only_net }
       cidr: { get_param: host_only_net_cidr }
-      gateway_ip: 10.10.10.1
-      dns_nameservers: [10.10.10.1]
+      gateway_ip: 10.0.0.1
+      dns_nameservers: [10.0.0.1]
       allocation_pools:
-        - start: 10.10.10.2
-          end: 10.10.10.99
-
-  remnux_port:
-    type: OS::Neutron::Port
-    properties:
-      network_id: { get_resource: host_only_net }
-      fixed_ips: [
-        {
-          "subnet": { get_resource: host_only_subnet },
-          "ip_address": 10.10.10.1
-        }
-      ]
-      port_security_enabled: false
+        - start: 10.0.0.2
+          end: 10.0.0.99
 
   nat_net:
     type: OS::Neutron::Net
@@ -117,12 +105,17 @@ resources:
 
 ##### Servers #####
 
-#  remnux_os_disk:
-#    type: OS::Cinder::Volume
-#    properties:
-#      name: remnux-root-disk
-#      image: { get_param: remnux_image }
-#      size: 40
+  remnux_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: host_only_net }
+      fixed_ips: [
+        {
+          "subnet": { get_resource: host_only_subnet },
+          "ip_address": 10.0.0.1
+        }
+      ]
+      port_security_enabled: false
 
   remnux_server:
     type: OS::Nova::Server
@@ -134,13 +127,6 @@ resources:
       #key_name: { get_param: key_name }
       networks:
         - port: { get_resource: remnux_port }
-#      block_device_mapping: [
-#        {
-#          "device_name": vda,
-#          "delete_on_termination": true,
-#          "volume_id": { get_resource: remnux_os_disk }
-#        }
-#      ]
 
   windows_port:
     type: OS::Neutron::Port
@@ -148,13 +134,6 @@ resources:
       network_id: { get_resource: host_only_net }
       fixed_ips:
         - subnet_id: { get_resource: host_only_subnet }
-
-#  windows_os_disk:
-#    type: OS::Cinder::Volume
-#    properties:
-#      name: windows-root-disk
-#      image: { get_param: windows_image }
-#      size: 40
 
   windows_client:
     type: OS::Nova::Server
@@ -166,13 +145,6 @@ resources:
       #key_name: { get_param: key_name }
       networks:
         - port: { get_resource: windows_port }
-#      block_device_mapping: [
-#        {
-#          "device_name": vda,
-#          "delete_on_termination": true,
-#          "volume_id": { get_resource: windows_os_disk }
-#        }
-#      ]
 
   fileserver_nat_port:
     type: OS::Neutron::Port
