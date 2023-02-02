@@ -73,6 +73,7 @@ resources:
       network_id: { get_resource: nat_net }
       cidr: 192.168.0.0/29
       gateway_ip: 192.168.0.1
+      dns_nameservers: [129.241.0.200, 129.241.0.201]
       allocation_pools:
         - start: 192.168.0.2
           end: 192.168.0.6
