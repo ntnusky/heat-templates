@@ -20,7 +20,7 @@ parameters:
   host_only_net_cidr:
     type: string
     description: CIDR for host-only network
-    default: 192.168.10.0/24
+    default: 10.10.10.0/24
   fileserver_image:
     type: string
     description: Name of fileserver image
@@ -56,11 +56,11 @@ resources:
     properties:
       network_id: { get_resource: host_only_net }
       cidr: { get_param: host_only_net_cidr }
-      gateway_ip: 192.168.10.1
-      dns_nameservers: [192.168.10.1]
+      gateway_ip: 10.10.10.1
+      dns_nameservers: [10.10.10.1]
       allocation_pools:
-        - start: 192.168.10.2
-          end: 192.168.10.99
+        - start: 10.10.10.2
+          end: 10.10.10.99
 
   remnux_port:
     type: OS::Neutron::Port
@@ -69,9 +69,10 @@ resources:
       fixed_ips: [
         {
           "subnet": { get_resource: host_only_subnet },
-          "ip_address": 192.168.10.1
+          "ip_address": 10.10.10.1
         }
       ]
+      port_security_enabled: false
 
   nat_net:
     type: OS::Neutron::Net
@@ -188,7 +189,7 @@ resources:
       fixed_ips: [
         {
           "subnet": { get_resource: host_only_subnet },
-          "ip_address": 192.168.10.100
+          "ip_address": 10.10.10.100
         }
       ]
 
