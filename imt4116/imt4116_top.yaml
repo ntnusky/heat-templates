@@ -161,7 +161,7 @@ resources:
       fixed_ips: [
         {
           "subnet": { get_resource: host_only_subnet },
-          "ip_address": 10.10.10.100
+          "ip_address": 10.0.0.100
         }
       ]
 
