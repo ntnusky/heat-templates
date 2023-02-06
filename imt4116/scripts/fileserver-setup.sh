@@ -38,7 +38,7 @@ echo "\
   path = /srv/share
   browseable = yes
   guest ok = yes
-  read only = no" >> /etc/samba/smb.conf
+  read only = yes" >> /etc/samba/smb.conf
 
 echo "Restarting samba"
 systemctl restart smbd.service
