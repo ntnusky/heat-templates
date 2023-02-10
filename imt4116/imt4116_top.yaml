@@ -20,28 +20,28 @@ parameters:
   host_only_net_cidr:
     type: string
     description: CIDR for host-only network
-    default: 192.168.10.0/24
+    default: 10.0.0.0/24
   fileserver_image:
     type: string
     description: Name of fileserver image
   fileserver_flavor:
     type: string
     description: Name of fileserver flavor
-    default: m1.tiny
+    default: gx1.1c2r
   remnux_image:
     type: string
     description: Name of remnux image
   remnux_flavor:
     type: string
     description: Name of flavor for remnux server
-    default: m1.tiny
+    default: gx1.1c2r
   windows_image:
     type: string
     description: Name of windows image
   windows_flavor:
     type: string
     description: Name of windows flavor
-    default: m1.medium
+    default: gx1.2c2r
 
 resources:
 ##### Networks, subnets and routers
@@ -56,22 +56,11 @@ resources:
     properties:
       network_id: { get_resource: host_only_net }
       cidr: { get_param: host_only_net_cidr }
-      gateway_ip: 192.168.10.1
-      dns_nameservers: [192.168.10.1]
+      gateway_ip: 10.0.0.1
+      dns_nameservers: [10.0.0.1]
       allocation_pools:
-        - start: 192.168.10.2
-          end: 192.168.10.99
-
-  remnux_port:
-    type: OS::Neutron::Port
-    properties:
-      network_id: { get_resource: host_only_net }
-      fixed_ips: [
-        {
-          "subnet": { get_resource: host_only_subnet },
-          "ip_address": 192.168.10.1
-        }
-      ]
+        - start: 10.0.0.2
+          end: 10.0.0.99
 
   nat_net:
     type: OS::Neutron::Net
@@ -84,6 +73,7 @@ resources:
       network_id: { get_resource: nat_net }
       cidr: 192.168.0.0/29
       gateway_ip: 192.168.0.1
+      dns_nameservers: [129.241.0.200, 129.241.0.201]
       allocation_pools:
         - start: 192.168.0.2
           end: 192.168.0.6
@@ -116,29 +106,28 @@ resources:
 
 ##### Servers #####
 
-  remnux_os_disk:
-    type: OS::Cinder::Volume
+  remnux_port:
+    type: OS::Neutron::Port
     properties:
-      name: remnux-root-disk
-      image: { get_param: remnux_image }
-      size: 25
+      network_id: { get_resource: host_only_net }
+      fixed_ips: [
+        {
+          "subnet": { get_resource: host_only_subnet },
+          "ip_address": 10.0.0.1
+        }
+      ]
+      port_security_enabled: false
 
   remnux_server:
     type: OS::Nova::Server
     properties:
       name: remnux
+      image: { get_param: remnux_image }
       flavor: { get_param: remnux_flavor }
       # For now not needed. Not running cloud-init
       #key_name: { get_param: key_name }
       networks:
         - port: { get_resource: remnux_port }
-      block_device_mapping: [
-        {
-          "device_name": vda,
-          "delete_on_termination": true,
-          "volume_id": { get_resource: remnux_os_disk }
-        }
-      ]
 
   windows_port:
     type: OS::Neutron::Port
@@ -147,29 +136,16 @@ resources:
       fixed_ips:
         - subnet_id: { get_resource: host_only_subnet }
 
-  windows_os_disk:
-    type: OS::Cinder::Volume
-    properties:
-      name: windows-root-disk
-      image: { get_param: windows_image }
-      size: 65
-
   windows_client:
     type: OS::Nova::Server
     properties:
       name: windows
+      image: { get_param: windows_image }
       flavor: { get_param: windows_flavor }
       # For now not needed. Not running cloud-init
       #key_name: { get_param: key_name }
       networks:
         - port: { get_resource: windows_port }
-      block_device_mapping: [
-        {
-          "device_name": vda,
-          "delete_on_termination": true,
-          "volume_id": { get_resource: windows_os_disk }
-        }
-      ]
 
   fileserver_nat_port:
     type: OS::Neutron::Port
@@ -186,7 +162,7 @@ resources:
       fixed_ips: [
         {
           "subnet": { get_resource: host_only_subnet },
-          "ip_address": 192.168.10.100
+          "ip_address": 10.0.0.100
         }
       ]
 
