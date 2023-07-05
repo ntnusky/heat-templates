@@ -1,0 +1,6 @@
+---
+parameters:
+  key_name: <MY-KEY>
+  admin_networks_v4: "x.x.x.x/NN,y.y.y.y/NN,..."
+  admin_networks_v6: "2001:DB8::/32"
+  ipv6_subnetpool: <UUID>
