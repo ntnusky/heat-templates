@@ -9,3 +9,6 @@ Contains a remnux machine, a windows machine on an isolated network, and a files
 The fileserver will always be available within the isolated network at `192.168.10.100`
 
 To get started, fill inn values in `params.yaml` and run the `create_stack.sh` script
+
+## Guacamole
+Building a simple guacamole setup with a reverse proxy, the guacamole software and a database.

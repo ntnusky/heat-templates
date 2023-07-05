@@ -1,0 +1,61 @@
+heat_template_version: 2018-08-31
+
+description: >
+  HOT template for a Apache webserver acting as a rproxy for guacamole
+
+parameters:
+  server_name:
+    type: string
+    description: Hostname of server
+  image:
+    type: string
+    description: Name of OS image
+  flavor:
+    type: string
+    description: Flavor for server
+  key_name:
+    type: string
+    description: Default SSH key
+  network:
+    type: string
+    description: Name or ID for network the VM should connect to
+  v4_subnet:
+    type: string
+    description: ID of v4 subnet
+  v6_subnet:
+    type: string
+    description: ID of v4 subnet
+  sec_groups:
+    type: comma_delimited_list
+    description: List of default security groups
+  external_net:
+    type: string
+    description: Name or ID of the floating IP pool
+
+resources:
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: server_name }
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: server_port }
+      user_data_format: RAW
+      user_data: { get_file: rproxy.bash }
+
+  server_port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_param: network }
+      fixed_ips:
+        - subnet_id: { get_param: v4_subnet }
+        - subnet_id: { get_param: v6_subnet }
+      security_groups: { get_param: sec_groups }
+
+  server_fip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: external_net }
+      port_id: { get_resource: server_port }

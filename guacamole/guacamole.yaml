@@ -1,0 +1,155 @@
+---
+heat_template_version: 2018-08-31
+
+description: >
+  Deploy a simple Apache Guacamole setup, including an Apache webserver
+  as reverse proxy, the Apache Guacamole software itself, and a MySQL database
+
+parameters:
+  key_name:
+    type: string
+    description: SSH-key for all servers
+  os_image:
+    type: string
+    description: Default OS for all server
+    default: Ubuntu Server 22.04 LTS (Jammy Jellyfish) amd64
+  external_net:
+    type: string
+    description: ID or name of external net for router
+    default: ntnu-global
+  guac_net_name:
+    type: string
+    description: Name of guacamole internal network
+    default: guacamole-network
+  ipv6_subnetpool:
+    type: string
+    description: ID for default IPv6 subnet pool
+  admin_networks_v4:
+    type: comma_delimited_list
+    label: admin_networks_v4
+    description: A list of IPv4 networks that will be allowed SSH access
+  admin_networks_v6:
+    type: comma_delimited_list
+    label: admin_networks_v6
+    description: A list of IPv6 networks that will be allowed SSH access
+  rproxy_flavor:
+    type: string
+    description: Flavor for Apache Webserver
+    default: gx1.1c2r
+  guacamole_flavor:
+    type: string
+    description: Flavor for Apache Guacamole server
+    default: gx3.2c8r
+  db_flavor:
+    type: string
+    description: Flavor for MySQL server
+    default: gx1.2c4r
+
+resources:
+  guac-servers:
+    type: guac-servers.yaml
+    depends_on: guac_net
+    properties:
+      key_name: { get_param: key_name }
+      os_image: { get_param: os_image }
+      network: { get_resource: guac_net }
+      v4_subnet: { get_resource: guac_subnet_v4 }
+      v6_subnet: { get_resource: guac_subnet_v6 }
+      external_net: { get_param: external_net }
+      rproxy_flavor: { get_param: rproxy_flavor }
+      guacamole_flavor: { get_param: guacamole_flavor }
+      db_flavor: { get_param: db_flavor }
+      sec_groups:
+        - default
+        - { get_resource: sg_linux_v4 }
+        - { get_resource: sg_linux_v6 }
+
+  # Networking
+  guac_net:
+    type: OS::Neutron::Net
+    properties:
+      name: { get_param: guac_net_name }
+
+  guac_subnet_v4:
+    type: OS::Neutron::Subnet
+    properties:
+      name: guacamole-v4
+      network: { get_resource: guac_net }
+      cidr: 192.168.100.0/24
+      gateway_ip: 192.168.100.1
+      allocation_pools:
+        - start: 192.168.100.10
+          end: 192.168.100.254
+
+  guac_subnet_v6:
+    type: OS::Neutron::Subnet
+    properties:
+      name: guacamole-v6
+      network: { get_resource: guac_net }
+      ip_version: 6
+      ipv6_address_mode: slaac
+      ipv6_ra_mode: slaac
+      subnetpool: { get_param: ipv6_subnetpool }
+
+  guac_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: { get_param: external_net }
+
+  guac_router_interface_v4:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: guac_router }
+      subnet_id: { get_resource: guac_subnet_v4 }
+
+  guac_router_interface_v6:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: guac_router }
+      subnet_id: { get_resource: guac_subnet_v6 }
+
+# Security groups
+  sg_linux_v4:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Common rules for Linux servers
+      rules:
+        repeat:
+          for_each:
+            <%net%>: { get_param: admin_networks_v4 }
+          template:
+            protocol: tcp
+            port_range_min: 22
+            port_range_max: 22
+            remote_ip_prefix: <%net%>
+
+  sg_linux_v6:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Common rules for Linux servers
+      rules:
+        repeat:
+          for_each:
+            <%net%>: { get_param: admin_networks_v6 }
+          template:
+            protocol: tcp
+            ethertype: IPv6
+            port_range_min: 22
+            port_range_max: 22
+            remote_ip_prefix: <%net%>
+
+  sg_linux_in4_icmp:
+    type: OS::Neutron::SecurityGroupRule
+    properties:
+      security_group: { get_resource: sg_linux_v4 }
+      protocol: icmp
+      remote_ip_prefix: 0.0.0.0/0
+
+  sg_linux_in6_icmp:
+    type: OS::Neutron::SecurityGroupRule
+    properties:
+      security_group: { get_resource: sg_linux_v6 }
+      ethertype: IPv6
+      protocol: icmpv6
+      remote_ip_prefix: ::/0

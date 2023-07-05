@@ -1,0 +1,41 @@
+#!/bin/bash
+apt update
+
+# Install and configure MySQL. The script block is the manual
+# alternative to the mysql_secure_installation command
+DEBIAN_FRONTEND=noninteractive apt -y install mysql-server pwgen
+pw=$(pwgen 16 1)
+guac_pw=$(pwgen 16 1)
+ip=$(hostname -I | cut -d' ' -f1)
+mysql -sfu root <<EOS
+-- set root password
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$pw';
+-- delete anonymous users
+DELETE FROM mysql.user WHERE User='';
+-- delete remote root capabilities
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+-- drop database 'test'
+DROP DATABASE IF EXISTS test;
+-- also make sure there are lingering permissions to it
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+-- make changes immediately
+FLUSH PRIVILEGES;
+EOS
+
+echo "MySQL root password: $pw" >> /home/ubuntu/install.log
+echo "MySQL guacamole_user password: $guac_pw" >> /home/ubuntu/install.log
+
+sed -i "s/127.0.0.1/$ip,127.0.0.1/g" /etc/mysql/mysql.conf.d/mysqld.cnf
+systemctl restart mysql.service
+
+# Creating what's needed for guacamole
+mysql -sfu root -p${pw} <<EOS
+CREATE DATABASE guacamole_db;
+CREATE USER 'guacamole_user'@'<%GUAC_HOST%>' IDENTIFIED WITH mysql_native_password BY '$guac_pw';
+GRANT SELECT,INSERT,UPDATE,DELETE ON guacamole_db.* TO 'guacamole_user'@'<%GUAC_HOST%>';
+FLUSH_PRIVILEGES;
+EOS
+
+wget -q https://repo.it.ntnu.no/guacamole/initdb.sql -O /tmp/initdb.sql
+mysql -u root -p${pw} guacamole_db < /tmp/initdb.sql
+rm /tmp/initdb.sql

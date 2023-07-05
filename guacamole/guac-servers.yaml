@@ -1,0 +1,76 @@
+---
+heat_template_version: 2018-08-31
+
+description: > 
+  HOT template that creates all servers for guacamole
+
+parameters:
+  network:
+    type: string
+    description: Network ID
+  v4_subnet:
+    type: string
+    description: ID of v4 subnet
+  v6_subnet:
+    type: string
+    description: ID of v4 subnet
+  key_name:
+    type: string
+    description: SSH key for all servers
+  os_image:
+    type: string
+    description: Defaul OS for all servers
+  external_net:
+    type: string
+    description: ID or name for floating IP pool
+  sec_groups:
+    type: comma_delimited_list
+    description: Security groups
+  rproxy_flavor:
+    type: string
+    description: Flavor for reverse proxy
+  guacamole_flavor:
+    type: string
+    description: Flavor for guacamole server
+  db_flavor:
+    type: string
+    description: Flavor for MySQL server
+
+resources:
+  rproxy:
+    type: lib/rproxy-server.yaml
+    properties:
+      server_name: guac-rproxy
+      image: { get_param: os_image }
+      flavor: { get_param: rproxy_flavor }
+      key_name: { get_param: key_name }
+      network: { get_param: network }
+      v4_subnet: { get_param: v4_subnet }
+      v6_subnet: { get_param: v6_subnet }
+      sec_groups: { get_param: sec_groups }
+      external_net: { get_param: external_net }
+
+  guacamole:
+    type: lib/guacamole-server.yaml
+    properties:
+      server_name: guacamole
+      image: { get_param: os_image }
+      flavor: { get_param: guacamole_flavor }
+      key_name: { get_param: key_name }
+      network: { get_param: network }
+      v4_subnet: { get_param: v4_subnet }
+      v6_subnet: { get_param: v6_subnet }
+      sec_groups: { get_param: sec_groups }
+
+  guac-db:
+    type: lib/db-server.yaml
+    properties:
+      server_name: guac-db
+      image: { get_param: os_image }
+      flavor: { get_param: db_flavor }
+      key_name: { get_param: key_name }
+      network: { get_param: network }
+      v4_subnet: { get_param: v4_subnet }
+      v6_subnet: { get_param: v6_subnet }
+      sec_groups: { get_param: sec_groups }
+      guac_ip: { get_attr: [ guacamole, local_ip ] }
