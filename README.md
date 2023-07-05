@@ -12,6 +12,7 @@ To get started, fill inn values in `params.yaml` and run the `create_stack.sh` s
 
 ## Guacamole
 **WORK IN PROGRESS**
+
 Building a simple guacamole setup with a reverse proxy, the guacamole software and a database.
 
 Fill in values in `params.yaml` and run `openstack stack create -e params.yaml -t guacamole.yaml <stack_name>` to fire it up.
