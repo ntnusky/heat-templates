@@ -21,6 +21,9 @@ parameters:
     type: string
     description: Name of existing guacamole network
     default: guacamole-network
+  guacamole_ssh_key:
+    type: string
+    description: SSH public key that guacamole will use to connect
   server_count:
     type: number
     description: Amount of sysbox-servers you need
@@ -41,3 +44,4 @@ resources:
           network:  { get_param: guacamole_net }
           sec_groups:
             - default
+          guacamole_ssh_key: { get_param: guacamole_ssh_key }

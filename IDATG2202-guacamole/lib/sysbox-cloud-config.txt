@@ -2,6 +2,14 @@
 package_upgrade: true
 timezone: "Europe/Oslo"
 
+users:
+  - default
+  - name: guacamole
+    gecos: Guacamole User
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - command="docker container run --name test --hostname os_test --user 1000:998 -it --rm --network none --cap-add=NET_ADMIN --runtime=sysbox-runc ubuntu:22.04 /bin/bash" <%GUACAMOLE_KEY%> guacamole-key
+
 runcmd:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
   - echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list
@@ -10,6 +18,7 @@ runcmd:
   - wget https://downloads.nestybox.com/sysbox/releases/v0.6.1/sysbox-ce_0.6.1-0.linux_amd64.deb -O /tmp/sysbox-ce_0.6.1-0.linux_amd64.deb
   - apt -y install /tmp/sysbox-ce_0.6.1-0.linux_amd64.deb
   - rm /tmp/sysbox-ce_0.6.1-0.linux_amd64.deb
+  - usermod -aG docker guacamole
 
 power_state:
   mode: reboot
