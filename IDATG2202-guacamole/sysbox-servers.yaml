@@ -1,0 +1,43 @@
+---
+heat_template_version: 2018-08-31
+
+description: >
+  Creates N amounts of sysbox servers that is supposed to be accessible through
+  a Apache Guacamole infrastructure
+
+parameters:
+  key_name:
+    type: string
+    description: SSH-key for all servers
+  os_image:
+    type: string
+    description: Default OS for all server
+    default: Ubuntu Server 22.04 LTS (Jammy Jellyfish) amd64
+  flavor:
+    type: string
+    description: Flavor for servers
+    default: gx3.4c8r
+  guacamole_net:
+    type: string
+    description: Name of existing guacamole network
+    default: guacamole-network
+  server_count:
+    type: number
+    description: Amount of sysbox-servers you need
+    default: 2
+
+resources:
+  sysboxes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: server_count }
+      resource_def:
+        type: lib/sysbox-server.yaml
+        properties:
+          server_name: sysbox-%index%
+          key_name: { get_param: key_name }
+          os_image: { get_param: os_image }
+          flavor:   { get_param: flavor }
+          network:  { get_param: guacamole_net }
+          sec_groups:
+            - default

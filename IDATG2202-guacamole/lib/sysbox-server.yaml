@@ -1,0 +1,38 @@
+---
+heat_template_version: 2018-08-31
+
+description: Create a server with docker and sysbox installed
+
+parameters:
+  server_name:
+    type: string
+    description: Server name
+  key_name:
+    type: string
+    description: Default SSH key
+  os_image:
+    type: string
+    description: OS image name
+  flavor:
+    type: string
+    description: Server flavor
+  network:
+    type: string
+    description: Network name
+  sec_groups:
+    type: comma_delimited_list
+    description: Default security groups
+
+resources:
+
+  sysbox_server:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: server_name }
+      image: { get_param: os_image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - network: { get_param: network }
+      user_data_format: RAW
+      user_data: { get_file: sysbox-cloud-config.txt }
