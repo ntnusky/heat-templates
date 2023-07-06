@@ -22,6 +22,9 @@ parameters:
   sec_groups:
     type: comma_delimited_list
     description: Default security groups
+  guacamole_ssh_key:
+    type: string
+    description: Public SSH key for the guacamole server
 
 resources:
 
@@ -35,4 +38,8 @@ resources:
       networks:
         - network: { get_param: network }
       user_data_format: RAW
-      user_data: { get_file: sysbox-cloud-config.txt }
+      user_data:
+        str_replace:
+          template: { get_file: sysbox-cloud-config.txt }
+          params:
+            <%GUACAMOLE_KEY%>: { get_param: guacamole_ssh_key }
