@@ -13,6 +13,11 @@ To get started, fill inn values in `params.yaml` and run the `create_stack.sh` s
 ## Guacamole
 **WORK IN PROGRESS**
 
-Building a simple guacamole setup with a reverse proxy, the guacamole software and a database.
+Building a simple guacamole setup with a reverse proxy, the guacamole software and a database. This particular setup will require the following things on beforehand:
+  - A domain name that you will use for the web portal
+  - A valid, trusted TLS certificate for the name above, with its key and CA cert chain
+  - All the details you need in order to configure LDAPS auth
 
 Fill in values in `params.yaml` and run `openstack stack create -e params.yaml -t guacamole.yaml <stack_name>` to fire it up.
+
+You have now ended up with a blank install of Apache Guacamole. Default credentials are guacadmin/guacadmin.
