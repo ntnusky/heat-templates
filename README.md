@@ -20,4 +20,4 @@ Building a simple guacamole setup with a reverse proxy, the guacamole software a
 
 Fill in values in `params.yaml` and run `openstack stack create -e params.yaml -t guacamole.yaml <stack_name>` to fire it up.
 
-You have now ended up with a blank install of Apache Guacamole. Default credentials are guacadmin/guacadmin.
+You have now ended up with a blank install of Apache Guacamole. Default credentials are guacadmin/guacadmin. These should obviously be changed on first login. To promote an LDAP user to an admin, create a local user with the same username, set a dummy password, and give it the admin role. Guacamole is configured to prefer LDAP as its auth source, so it will accept the given user's LDAP password on logon.
