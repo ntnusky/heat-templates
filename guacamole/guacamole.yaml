@@ -32,6 +32,18 @@ parameters:
     type: comma_delimited_list
     label: admin_networks_v6
     description: A list of IPv6 networks that will be allowed SSH access
+  admin_email:
+    type: string
+    description: Admin email for Apache config
+    default: admin@example.com
+  allow_web_from_v4:
+    type: comma_delimited_list
+    description: List of IPv4 networks to allow web traffic from
+    default: "0.0.0.0/0"
+  allow_web_from_v6:
+    type: comma_delimited_list
+    description: List of IPv6 networks to allow web traffic from
+    default: "::/0"
   rproxy_flavor:
     type: string
     description: Flavor for Apache Webserver
@@ -40,10 +52,52 @@ parameters:
     type: string
     description: Flavor for Apache Guacamole server
     default: gx3.2c8r
+  guacamole_fqdn:
+    type: string
+    description: FQDN for guacamole web access
   db_flavor:
     type: string
     description: Flavor for MySQL server
     default: gx1.2c4r
+  db_root_password:
+    type: string
+    description: MySQL root password
+  db_guacamole_password:
+    type: string
+    description: MySQL guacamole_user password
+  ldap_host:
+    type: string
+    description: LDAP host to auth with
+  ldap_user_base:
+    type: string
+    description: OU with users
+  ldap_group_base:
+    type: string
+    description: OU with groups
+  ldap_group_search_filter:
+    type: string
+    description: Search filter for groups
+  ldap_member_attribute:
+    type: string
+    description: LDAP attribute for group members (default is assuming OpenLDAP)
+    default: memberUid
+  ldap_member_attribute_type:
+    type: string
+    description: LDAP attribute type for group members (default is assuming OpenLDAP)
+    default: uid
+  ldap_user_attributes:
+    type: string
+    description: Which LDAP attributes to import for a user (default is assuming OpenLDAP)
+    default: cn,givenName,sn,mail
+  tls_key:
+    type: string
+    description: Private key for TLS cert
+  tls_cert:
+    type: string
+    description: TLS certificate
+  cert_chain:
+    type: string
+    description: Certificate for CA
 
 resources:
   guac-servers:
@@ -56,13 +110,33 @@ resources:
       v4_subnet: { get_resource: guac_subnet_v4 }
       v6_subnet: { get_resource: guac_subnet_v6 }
       external_net: { get_param: external_net }
-      rproxy_flavor: { get_param: rproxy_flavor }
-      guacamole_flavor: { get_param: guacamole_flavor }
-      db_flavor: { get_param: db_flavor }
       sec_groups:
         - default
         - { get_resource: sg_linux_v4 }
         - { get_resource: sg_linux_v6 }
+      sec_groups_web:
+        - { get_resource: sg_web_rules_v4 }
+        - { get_resource: sg_web_rules_v6 }
+      rproxy_flavor: { get_param: rproxy_flavor }
+      rproxy_ip: 192.168.100.20
+      admin_email: { get_param: admin_email }
+      guacamole_flavor: { get_param: guacamole_flavor }
+      guacamole_ip: 192.168.100.21
+      guacamole_fqdn: { get_param: guacamole_fqdn }
+      db_flavor: { get_param: db_flavor }
+      db_ip: 192.168.100.22
+      db_root_password: { get_param: db_root_password }
+      db_guacamole_password: { get_param: db_guacamole_password }
+      ldap_host: { get_param: ldap_host }
+      ldap_user_base: { get_param: ldap_user_base }
+      ldap_group_base: { get_param: ldap_group_base }
+      ldap_group_search_filter: { get_param: ldap_group_search_filter }
+      ldap_member_attribute: { get_param: ldap_member_attribute }
+      ldap_member_attribute_type: { get_param: ldap_member_attribute_type }
+      ldap_user_attributes: { get_param: ldap_user_attributes }
+      tls_key: { get_param: tls_key }
+      tls_cert: { get_param: tls_cert }
+      cert_chain: { get_param: cert_chain }
 
   # Networking
   guac_net:
@@ -153,3 +227,35 @@ resources:
       ethertype: IPv6
       protocol: icmpv6
       remote_ip_prefix: ::/0
+
+  sg_web_rules_v4:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Allow HTTP/HTTPS for given networks
+      rules:
+        repeat:
+          for_each:
+            <%net%>: { get_param: allow_web_from_v4 }
+            <%port%>: [ "80", "443" ]
+          template:
+            protocol: tcp
+            ethertype: IPv4
+            port_range_min: <%port%>
+            port_range_max: <%port%>
+            remote_ip_prefix: <%net%>
+
+  sg_web_rules_v6:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Allow HTTP/HTTPS for given networks
+      rules:
+        repeat:
+          for_each:
+            <%net%>: { get_param: allow_web_from_v6 }
+            <%port%>: [ "80", "443" ]
+          template:
+            protocol: tcp
+            ethertype: IPv6
+            port_range_min: <%port%>
+            port_range_max: <%port%>
+            remote_ip_prefix: <%net%>

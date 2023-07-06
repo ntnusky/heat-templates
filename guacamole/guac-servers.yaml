@@ -25,16 +25,70 @@ parameters:
     description: ID or name for floating IP pool
   sec_groups:
     type: comma_delimited_list
-    description: Security groups
+    description: Common security groups
+  sec_groups_web:
+    type: comma_delimited_list
+    description: Security groups for web traffic
+  admin_email:
+    type: string
+    description: Admin email for Apache config
+  rproxy_ip:
+    type: string
+    description: Static IPv4 for reverse proxy
   rproxy_flavor:
     type: string
     description: Flavor for reverse proxy
+  tls_key:
+    type: string
+    description: Private key for TLS cert
+  tls_cert:
+    type: string
+    description: TLS certificate
+  cert_chain:
+    type: string
+    description: Certificate for CA
+  guacamole_ip:
+    type: string
+    description: Static IPv4 for guacamole server
   guacamole_flavor:
     type: string
     description: Flavor for guacamole server
+  guacamole_fqdn:
+    type: string
+    description: FQDN for guacamole web access
+  db_ip:
+    type: string
+    description: Static IPv4 for MySQL server
   db_flavor:
     type: string
     description: Flavor for MySQL server
+  db_root_password:
+    type: string
+    description: MySQL root password
+  db_guacamole_password:
+    type: string
+    description: MySQL guacamole_user password
+  ldap_host:
+    type: string
+    description: LDAP host to auth with
+  ldap_user_base:
+    type: string
+    description: OU with users
+  ldap_group_base:
+    type: string
+    description: OU with groups
+  ldap_group_search_filter:
+    type: string
+    description: Search filter for groups
+  ldap_member_attribute:
+    type: string
+    description: LDAP attribute for group members
+  ldap_member_attribute_type:
+    type: string
+    description: LDAP attribute type for group members
+  ldap_user_attributes:
+    type: string
+    description: Which LDAP attributes to import for a user
 
 resources:
   rproxy:
@@ -45,10 +99,18 @@ resources:
       flavor: { get_param: rproxy_flavor }
       key_name: { get_param: key_name }
       network: { get_param: network }
+      ip: { get_param: rproxy_ip }
       v4_subnet: { get_param: v4_subnet }
       v6_subnet: { get_param: v6_subnet }
-      sec_groups: { get_param: sec_groups }
+      sec_groups:
+        list_join: [',', {get_param: sec_groups}, {get_param: sec_groups_web}]
       external_net: { get_param: external_net }
+      admin_email: { get_param: admin_email }
+      guacamole_host: { get_param: guacamole_ip }
+      guacamole_fqdn: { get_param: guacamole_fqdn }
+      tls_key: { get_param: tls_key }
+      tls_cert: { get_param: tls_cert }
+      cert_chain: { get_param: cert_chain }
 
   guacamole:
     type: lib/guacamole-server.yaml
@@ -58,9 +120,20 @@ resources:
       flavor: { get_param: guacamole_flavor }
       key_name: { get_param: key_name }
       network: { get_param: network }
+      ip: { get_param: guacamole_ip }
       v4_subnet: { get_param: v4_subnet }
       v6_subnet: { get_param: v6_subnet }
       sec_groups: { get_param: sec_groups }
+      db_ip: { get_param: db_ip }
+      db_password: { get_param: db_guacamole_password }
+      rproxy_ip: { get_param: rproxy_ip }
+      ldap_host: { get_param: ldap_host }
+      ldap_user_base: { get_param: ldap_user_base }
+      ldap_group_base: { get_param: ldap_group_base }
+      ldap_group_search_filter: { get_param: ldap_group_search_filter }
+      ldap_member_attribute: { get_param: ldap_member_attribute }
+      ldap_member_attribute_type: { get_param: ldap_member_attribute_type }
+      ldap_user_attributes: { get_param: ldap_user_attributes }
 
   guac-db:
     type: lib/db-server.yaml
@@ -70,7 +143,10 @@ resources:
       flavor: { get_param: db_flavor }
       key_name: { get_param: key_name }
       network: { get_param: network }
+      ip: { get_param: db_ip }
       v4_subnet: { get_param: v4_subnet }
       v6_subnet: { get_param: v6_subnet }
       sec_groups: { get_param: sec_groups }
-      guac_ip: { get_attr: [ guacamole, local_ip ] }
+      db_root_password: { get_param: db_root_password }
+      db_guacamole_password: { get_param: db_guacamole_password }
+      guac_ip: { get_param: guacamole_ip }

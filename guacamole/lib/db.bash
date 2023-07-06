@@ -4,8 +4,8 @@ apt update
 # Install and configure MySQL. The script block is the manual
 # alternative to the mysql_secure_installation command
 DEBIAN_FRONTEND=noninteractive apt -y install mysql-server pwgen
-pw=$(pwgen 16 1)
-guac_pw=$(pwgen 16 1)
+pw='<%DB_ROOT_PW%>'
+guac_pw='<%DB_GUACAMOLE_PW%>'
 ip=$(hostname -I | cut -d' ' -f1)
 mysql -sfu root <<EOS
 -- set root password
@@ -33,7 +33,7 @@ mysql -sfu root -p${pw} <<EOS
 CREATE DATABASE guacamole_db;
 CREATE USER 'guacamole_user'@'<%GUAC_HOST%>' IDENTIFIED WITH mysql_native_password BY '$guac_pw';
 GRANT SELECT,INSERT,UPDATE,DELETE ON guacamole_db.* TO 'guacamole_user'@'<%GUAC_HOST%>';
-FLUSH_PRIVILEGES;
+FLUSH PRIVILEGES;
 EOS
 
 wget -q https://repo.it.ntnu.no/guacamole/initdb.sql -O /tmp/initdb.sql

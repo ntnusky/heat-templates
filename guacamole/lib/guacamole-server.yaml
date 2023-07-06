@@ -19,6 +19,9 @@ parameters:
   network:
     type: string
     description: Name or ID for network the VM should connect to
+  ip:
+    type: string
+    description: Static IPv4 address
   v4_subnet:
     type: string
     description: ID of v4 subnet
@@ -28,6 +31,36 @@ parameters:
   sec_groups:
     type: comma_delimited_list
     description: List of default security groups
+  db_ip:
+    type: string
+    description: IP address of DB server
+  db_password:
+    type: string
+    description: DB password for guacamole_user
+  rproxy_ip:
+    type: string
+    description: IP address of DB server
+  ldap_host:
+    type: string
+    description: LDAP host to auth with
+  ldap_user_base:
+    type: string
+    description: OU with users
+  ldap_group_base:
+    type: string
+    description: OU with groups
+  ldap_group_search_filter:
+    type: string
+    description: Search filter for groups
+  ldap_member_attribute:
+    type: string
+    description: LDAP attribute for group members
+  ldap_member_attribute_type:
+    type: string
+    description: LDAP attribute type for group members
+  ldap_user_attributes:
+    type: string
+    description: Which LDAP attributes to import for a user
 
 resources:
   server:
@@ -40,7 +73,20 @@ resources:
       networks:
         - port: { get_resource: server_port }
       user_data_format: RAW
-      user_data: { get_file: guacamole.bash }
+      user_data:
+        str_replace:
+          template: { get_file: guacamole.bash }
+          params:
+            <%DBHOST%>: { get_param: db_ip }
+            <%DBPASSWORD%>: { get_param: db_password }
+            <%RPROXY%>: { get_param: rproxy_ip }
+            <%LDAP_HOST%>: { get_param: ldap_host }
+            <%LDAP_USER_BASE%>: { get_param: ldap_user_base }
+            <%LDAP_GROUP_BASE%>: { get_param: ldap_group_base }
+            <%LDAP_GROUP_SEARCH_FILTER%>: { get_param: ldap_group_search_filter }
+            <%LDAP_MEMBER_ATTRIBUTE%>: { get_param: ldap_member_attribute }
+            <%LDAP_MEMBER_ATTRIBUTE_TYPE%>: { get_param: ldap_member_attribute_type }
+            <%LDAP_USER_ATTRIBUTES%>: { get_param: ldap_user_attributes }
 
   server_port:
     type: OS::Neutron::Port
@@ -48,10 +94,6 @@ resources:
       network: { get_param: network }
       fixed_ips:
         - subnet_id: { get_param: v4_subnet }
+          ip_address: { get_param: ip }
         - subnet_id: { get_param: v6_subnet }
       security_groups: { get_param: sec_groups }
-
-outputs:
-  local_ip:
-    description: Local IPv4 address
-    value: {get_attr: [ server_port, fixed_ips, 0, ip_address ]}

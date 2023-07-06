@@ -19,6 +19,9 @@ parameters:
   network:
     type: string
     description: Name or ID for network the VM should connect to
+  ip:
+    type: string
+    description: Static IPv4 address
   v4_subnet:
     type: string
     description: ID of v4 subnet
@@ -28,6 +31,12 @@ parameters:
   sec_groups:
     type: comma_delimited_list
     description: List of default security groups
+  db_root_password:
+    type: string
+    description: Root password for MySQL
+  db_guacamole_password:
+    type: string
+    description: Password for MySQL user guacamole_user
   guac_ip:
     type: string
     description: IP address of guacamole host
@@ -48,6 +57,8 @@ resources:
           template: { get_file: db.bash }
           params:
             <%GUAC_HOST%>: { get_param: guac_ip }
+            <%DB_ROOT_PW%>: { get_param: db_root_password }
+            <%DB_GUACAMOLE_PW%>: { get_param: db_guacamole_password }
 
   server_port:
     type: OS::Neutron::Port
@@ -55,10 +66,6 @@ resources:
       network: { get_param: network }
       fixed_ips:
         - subnet_id: { get_param: v4_subnet }
+          ip_address: { get_param: ip }
         - subnet_id: { get_param: v6_subnet }
       security_groups: { get_param: sec_groups }
-
-outputs:
-  local_ip:
-    description: Local IPv4 address
-    value: {get_attr: [ server_port, fixed_ips, 0, ip_address ]}

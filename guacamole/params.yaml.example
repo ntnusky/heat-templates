@@ -4,3 +4,13 @@ parameters:
   admin_networks_v4: "x.x.x.x/NN,y.y.y.y/NN,..."
   admin_networks_v6: "2001:DB8::/32"
   ipv6_subnetpool: <UUID>
+  db_root_password: "<MySQL ROOT PASSWORD>"
+  db_guacamole_password: "<PASSWORD FOR MySQL USER guacamole_user>"
+  ldap_host: <LDAP SERVER FQDN>
+  ldap_user_base: <DN FOR USER OU>
+  ldap_group_base: <DN FOR GROUP OU>
+  ldap_group_search_filter: <LDAP SEARCH FILTER FOR GROUPS>
+  guacamole_fqdn: <FQDN FOR GUACAMOLE WEB PAGE>
+  tls_key: <base64 encoded private key>
+  tls_cert: <base64 encoded cert>
+  cert_chain: <base64 encoded cert chain>
