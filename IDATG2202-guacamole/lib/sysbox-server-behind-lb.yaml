@@ -19,12 +19,18 @@ parameters:
   network:
     type: string
     description: Network name
+  subnet:
+    type: string
+    description: Subnet name
   sec_groups:
     type: comma_delimited_list
     description: Default security groups
   guacamole_ssh_key:
     type: string
     description: Public SSH key for the guacamole server
+  lb_pool:
+    type: string
+    description: The Octavia LB Pool the server should be a member in
 
 resources:
 
@@ -37,10 +43,18 @@ resources:
       key_name: { get_param: key_name }
       networks:
         - network: { get_param: network }
-      security_groups: { get_param: sec_groups }
+      security_groups: { get_param: sec_groups }
       user_data_format: RAW
       user_data:
         str_replace:
           template: { get_file: sysbox-cloud-config.txt }
           params:
             <%GUACAMOLE_KEY%>: { get_param: guacamole_ssh_key }
+
+  pool_member_ssh:
+    type: OS::Octavia::PoolMember
+    properties:
+      pool: { get_param: lb_pool }
+      protocol_port: 22
+      subnet: { get_param: subnet }
+      address: {get_attr: [ sysbox_server, networks, get_param: network, 1 ]}

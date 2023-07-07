@@ -1,0 +1,104 @@
+---
+heat_template_version: 2018-08-31
+
+description: >
+  Creates N amounts of sysbox servers placed behind a loadbalancer.
+  that is supposed to be accessible through a Apache Guacamole infrastructure
+
+parameters:
+  key_name:
+    type: string
+    description: SSH-key for all servers
+  os_image:
+    type: string
+    description: Default OS for all server
+    default: Ubuntu Server 22.04 LTS (Jammy Jellyfish) amd64
+  flavor:
+    type: string
+    description: Flavor for servers
+    default: gx3.4c8r
+  guacamole_net:
+    type: string
+    description: Name of existing guacamole network
+    default: guacamole-network
+  guacamole_subnet:
+    type: string
+    description: Name or ID of existing guacamole IPv4 subnet
+    default: guacamole-v4
+  guacamole_ssh_key:
+    type: string
+    description: SSH public key that guacamole will use to connect
+  lb_vip:
+    type: string
+    description: VIP address for LB. Default assumes that you are using the network defined in our guacamole template
+    default: 192.168.100.30
+  lb_flavor:
+    type: string
+    description: Octavia flavor for LB
+    default: Regular
+  server_count:
+    type: number
+    description: Amount of sysbox-servers you need
+    default: 2
+
+resources:
+
+  sysbox_lb:
+    type: OS::Octavia::LoadBalancer
+    properties:
+      vip_subnet: { get_param: guacamole_subnet }
+      vip_address: { get_param: lb_vip }
+      flavor: { get_param: lb_flavor }
+
+  sysbox_ssh_listener:
+    type: OS::Octavia::Listener
+    properties:
+      protocol: TCP
+      protocol_port: 22
+      loadbalancer: { get_resource: sysbox_lb }
+
+  sysbox_server_pool:
+    type: OS::Octavia::Pool
+    properties:
+      lb_algorithm: LEAST_CONNECTIONS
+      protocol: TCP
+      listener: { get_resource: sysbox_ssh_listener }
+      loadbalancer: { get_resource: sysbox_lb }
+
+  sysbox_ssh_monitor:
+    type: OS::Octavia::HealthMonitor
+    properties:
+      pool: { get_resource: sysbox_server_pool }
+      delay: 5
+      max_retries: 3
+      timeout: 5
+      type: TCP
+
+  sg_allow_internal_ssh:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: Allow internal SSH between hosts not in a common SG (i.e lb->server)
+      rules:
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: 192.168.100.0/24
+
+  sysboxes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: { get_param: server_count }
+      resource_def:
+        type: lib/sysbox-server-behind-lb.yaml
+        properties:
+          server_name: sysbox-%index%
+          key_name: { get_param: key_name }
+          os_image: { get_param: os_image }
+          flavor:   { get_param: flavor }
+          network:  { get_param: guacamole_net }
+          subnet:   { get_param: guacamole_subnet }
+          sec_groups:
+            - default
+            - { get_resource: sg_allow_internal_ssh }
+          guacamole_ssh_key: { get_param: guacamole_ssh_key }
+          lb_pool: { get_resource: sysbox_server_pool }
