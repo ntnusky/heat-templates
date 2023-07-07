@@ -18,7 +18,7 @@ To achieve this, all you have to do is:
         - `Port`: 22
       - Authentication:
         - `Username`: guacamole
-        - `Private key`: <The private key from the SSH-keypair you want guacamole to login with>
+        - `Private key`: \<The private key from the SSH-keypair you want guacamole to login with\>
       - Session / Environment:
         - `Server keepalive interval`: 10
   - Click save
