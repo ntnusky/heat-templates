@@ -17,14 +17,18 @@ parameters:
     type: string
     description: Flavor for servers
     default: gx3.4c8r
-  guacamole_net:
+  network:
     type: string
-    description: Name of existing guacamole network
+    description: Name of an existing network
     default: guacamole-network
-  guacamole_subnet:
+  subnet:
     type: string
-    description: Name or ID of existing guacamole IPv4 subnet
+    description: Name or ID of existing IPv4 subnet
     default: guacamole-v4
+  subnet_prefix:
+    type: string
+    description: The IPv4 address prefix of your subnet
+    default: 192.168.100.0/24
   guacamole_ssh_key:
     type: string
     description: SSH public key that guacamole will use to connect
@@ -46,7 +50,7 @@ resources:
   sysbox_lb:
     type: OS::Octavia::LoadBalancer
     properties:
-      vip_subnet: { get_param: guacamole_subnet }
+      vip_subnet: { get_param: subnet }
       vip_address: { get_param: lb_vip }
       flavor: { get_param: lb_flavor }
 
@@ -82,7 +86,7 @@ resources:
         - protocol: tcp
           port_range_min: 22
           port_range_max: 22
-          remote_ip_prefix: 192.168.100.0/24
+          remote_ip_prefix: { get_param: subnet_prefix }
 
   sysboxes:
     type: OS::Heat::ResourceGroup
@@ -95,8 +99,8 @@ resources:
           key_name: { get_param: key_name }
           os_image: { get_param: os_image }
           flavor:   { get_param: flavor }
-          network:  { get_param: guacamole_net }
-          subnet:   { get_param: guacamole_subnet }
+          network:  { get_param: network }
+          subnet:   { get_param: subnet }
           sec_groups:
             - default
             - { get_resource: sg_allow_internal_ssh }

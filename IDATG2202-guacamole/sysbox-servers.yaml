@@ -17,9 +17,9 @@ parameters:
     type: string
     description: Flavor for servers
     default: gx3.4c8r
-  guacamole_net:
+  network:
     type: string
-    description: Name of existing guacamole network
+    description: Name of an existing network
     default: guacamole-network
   guacamole_ssh_key:
     type: string
@@ -41,7 +41,7 @@ resources:
           key_name: { get_param: key_name }
           os_image: { get_param: os_image }
           flavor:   { get_param: flavor }
-          network:  { get_param: guacamole_net }
+          network:  { get_param: network }
           sec_groups:
             - default
           guacamole_ssh_key: { get_param: guacamole_ssh_key }
