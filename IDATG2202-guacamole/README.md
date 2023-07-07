@@ -12,6 +12,8 @@ If you run this stack and the guacamole infrastructure in different Openstack pr
  - subnet\_prefix (set it to whatever is correct for you given subnet)
  - lb\_vip       (set it to a valid address in your subnet, outside of the DHCP scope)
 
+In addition you will have to modify the `sysbox-servers-with-lb.yaml` template, so that the LoadBalancer will get a floating IP address.
+
 ## Howto fire this up
 Set the parameters you need in `params.yaml` and run `openstack stack create -e params.yaml -t sysbox-servers-with-lb.yaml <stack_name>`. The SSH public-key you need in `guacamole_ssh_key` should be from the keypair you want Guacamole log into your sysbox-servers with. This keypair can be generated whereever you like.
 
