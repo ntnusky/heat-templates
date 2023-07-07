@@ -45,3 +45,6 @@ To achieve this, all you have to do is:
   - (If you think it's useful, set some time limits on the account)
   - Give the user permission to use the connection you created in the last step (and only this connection!)
   - Click save
+
+## Credits
+Big thanks to [Hårek Haugerud](https://www.oslomet.no/om/ansatt/haugerud/) at [OsloMet](https://www.oslomet.no) for developing the concept!
