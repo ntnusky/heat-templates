@@ -7,6 +7,8 @@ GUACAMOLE_HOST='<%GUACAMOLE_HOST%>'
 TLS_KEY='<%TLS_KEY%>'
 TLS_CERT='<%TLS_CERT%>'
 CERT_CHAIN='<%CERT_CHAIN%>'
+IPV4=$(hostname -I | cut -d' ' -f1)
+IPV6=$(hostname -I | cut -d' ' -f2)
 
 # Write certs
 cat << EOF > /etc/ssl/private/${FQDN}.key
@@ -44,7 +46,10 @@ cat << EOF > /etc/apache2/sites-available/${FQDN}.conf
 <VirtualHost *:443>
 	ServerName $FQDN
 
-	Redirect "/" "https://${FQDN}/guacamole/"
+  RewriteEngine on
+  RewriteCond %{HTTP_HOST} guacamole\.iik\.ntnu\.no [NC]
+  RewriteCond %{REQUEST_URI} ^/$
+  RewriteRule ^(.*)$ https://${FQDN}/guacamole/ [L,R=301]
 
 	SetEnvIf Request_URI "^/guacamole/tunnel" dontlog"
 	LogFormat "%h %l %u %t \"%r\" %<s %b" common
@@ -69,6 +74,14 @@ cat << EOF > /etc/apache2/sites-available/${FQDN}.conf
 		ProxyPass ws://${GUACAMOLE_HOST}:8080/guacamole/websocket-tunnel
 		ProxyPassReverse ws://${GUACAMOLE_HOST}:8080/guacamole/websocket-tunnel
 	</Location>
+
+  <Location "/server-status">
+    SetHandler server-status
+    Satisfy any
+    Require host localhost
+    Require host ${IPV4}
+    Require host ${IPV6}
+  </Location>
 
 </VirtualHost>
 </IfModule>
