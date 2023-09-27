@@ -5,6 +5,9 @@ description: >
   HOT template that creates all servers for guacamole
 
 parameters:
+  environment:
+    type: string
+    description: Deployment env
   network:
     type: string
     description: Network ID
@@ -94,7 +97,12 @@ resources:
   rproxy:
     type: lib/rproxy-server.yaml
     properties:
-      server_name: guac-rproxy
+      server_name:
+        str_replace:
+          template: $env-$name
+          params:
+            $env: { get_param: environment }
+            $name: guac-rproxy
       image: { get_param: os_image }
       flavor: { get_param: rproxy_flavor }
       key_name: { get_param: key_name }
@@ -115,7 +123,12 @@ resources:
   guacamole:
     type: lib/guacamole-server.yaml
     properties:
-      server_name: guacamole
+      server_name:
+        str_replace:
+          template: $env-$name
+          params:
+            $env: { get_param: environment }
+            $name: guacamole
       image: { get_param: os_image }
       flavor: { get_param: guacamole_flavor }
       key_name: { get_param: key_name }
@@ -138,7 +151,12 @@ resources:
   guac-db:
     type: lib/db-server.yaml
     properties:
-      server_name: guac-db
+      server_name:
+        str_replace:
+          template: $env-$name
+          params:
+            $env: { get_param: environment }
+            $name: guac-db
       image: { get_param: os_image }
       flavor: { get_param: db_flavor }
       key_name: { get_param: key_name }

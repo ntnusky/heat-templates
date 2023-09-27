@@ -6,6 +6,9 @@ description: >
   as reverse proxy, the Apache Guacamole software itself, and a MySQL database
 
 parameters:
+  environment:
+    type: string
+    description: Which environemnt we are deploying
   key_name:
     type: string
     description: SSH-key for all servers
@@ -110,6 +113,7 @@ resources:
     type: guac-servers.yaml
     depends_on: guac_net
     properties:
+      environment: { get_param: environment }
       key_name: { get_param: key_name }
       os_image: { get_param: os_image }
       network: { get_resource: guac_net }
@@ -149,12 +153,22 @@ resources:
   guac_net:
     type: OS::Neutron::Net
     properties:
-      name: { get_param: guac_net_name }
+      name:
+        str_replace:
+          template: $env-$name
+          params:
+            $env: { get_param: environment }
+            $name: { get_param: guac_net_name }
 
   guac_subnet_v4:
     type: OS::Neutron::Subnet
     properties:
-      name: guacamole-v4
+      name:
+        str_replace:
+          template: $env-$name
+          params:
+            $env: { get_param: environment }
+            $name: guacamole-v4
       network: { get_resource: guac_net }
       cidr: 192.168.100.0/24
       gateway_ip: 192.168.100.1
@@ -165,7 +179,12 @@ resources:
   guac_subnet_v6:
     type: OS::Neutron::Subnet
     properties:
-      name: guacamole-v6
+      name:
+        str_replace:
+          template: $env-$name
+          params:
+            $env: { get_param: environment }
+            $name: guacamole-v6
       network: { get_resource: guac_net }
       ip_version: 6
       ipv6_address_mode: slaac

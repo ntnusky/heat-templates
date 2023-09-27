@@ -25,6 +25,9 @@ EOF
 
 chmod 0600 /etc/ssl/private/${FQDN}.key
 
+# Construct rewrite pattern for HTTP_HOST
+HTTP_HOST_PATTERN=$(echo ${FQDN} | sed 's|\.|\\.|g')
+
 # Install and configure apache2
 apt update
 apt -y install apache2
@@ -47,7 +50,7 @@ cat << EOF > /etc/apache2/sites-available/${FQDN}.conf
 	ServerName $FQDN
 
   RewriteEngine on
-  RewriteCond %{HTTP_HOST} guacamole\.iik\.ntnu\.no [NC]
+  RewriteCond %{HTTP_HOST} ${HTTP_HOST_PATTERN} [NC]
   RewriteCond %{REQUEST_URI} ^/$
   RewriteRule ^(.*)$ https://${FQDN}/guacamole/ [L,R=301]
 
