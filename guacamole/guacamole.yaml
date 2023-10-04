@@ -138,7 +138,7 @@ resources:
       rproxy_flavor: { get_param: rproxy_flavor }
       rproxy_ip: 192.168.100.20
       admin_email: { get_param: admin_email }
-      ntnu_admin_group: { get_param: ntnu_admin_group }
+      ntnu_admin_group: { get_param: ntnu_admin_group }
       guacamole_flavor: { get_param: guacamole_flavor }
       guacamole_ip: 192.168.100.21
       guacamole_fqdn: { get_param: guacamole_fqdn }
