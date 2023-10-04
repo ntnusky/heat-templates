@@ -1,5 +1,5 @@
 ---
-heat_template_version: 2018-08-31
+heat_template_version: wallaby
 
 description: > 
   HOT template that creates all servers for guacamole
@@ -32,6 +32,12 @@ parameters:
   sec_groups_web:
     type: comma_delimited_list
     description: Security groups for web traffic
+  munin_server_v4:
+    type: string
+    description: IPv4 address of munin-server
+  munin_server_v6:
+    type: string
+    description: IPv6 address of munin-server
   admin_email:
     type: string
     description: Admin email for Apache config
@@ -97,12 +103,7 @@ resources:
   rproxy:
     type: lib/rproxy-server.yaml
     properties:
-      server_name:
-        str_replace:
-          template: $env-$name
-          params:
-            $env: { get_param: environment }
-            $name: guac-rproxy
+      server_name: { list_join: ['-', [ { get_param: environment }, guac-rproxy ]]}
       image: { get_param: os_image }
       flavor: { get_param: rproxy_flavor }
       key_name: { get_param: key_name }
@@ -112,6 +113,8 @@ resources:
       v6_subnet: { get_param: v6_subnet }
       sec_groups:
         list_join: [',', {get_param: sec_groups}, {get_param: sec_groups_web}]
+      munin_server_v4: { get_param: munin_server_v4 }
+      munin_server_v6: { get_param: munin_server_v6 }
       external_net: { get_param: external_net }
       admin_email: { get_param: admin_email }
       guacamole_host: { get_param: guacamole_ip }
@@ -123,12 +126,7 @@ resources:
   guacamole:
     type: lib/guacamole-server.yaml
     properties:
-      server_name:
-        str_replace:
-          template: $env-$name
-          params:
-            $env: { get_param: environment }
-            $name: guacamole
+      server_name: { list_join: ['-', [ { get_param: environment }, guacamole ]]}
       image: { get_param: os_image }
       flavor: { get_param: guacamole_flavor }
       key_name: { get_param: key_name }
@@ -137,6 +135,8 @@ resources:
       v4_subnet: { get_param: v4_subnet }
       v6_subnet: { get_param: v6_subnet }
       sec_groups: { get_param: sec_groups }
+      munin_server_v4: { get_param: munin_server_v4 }
+      munin_server_v6: { get_param: munin_server_v6 }
       db_ip: { get_param: db_ip }
       db_password: { get_param: db_guacamole_password }
       rproxy_ip: { get_param: rproxy_ip }
@@ -151,12 +151,7 @@ resources:
   guac-db:
     type: lib/db-server.yaml
     properties:
-      server_name:
-        str_replace:
-          template: $env-$name
-          params:
-            $env: { get_param: environment }
-            $name: guac-db
+      server_name: { list_join: ['-', [ { get_param: environment }, guac-db ]]}
       image: { get_param: os_image }
       flavor: { get_param: db_flavor }
       key_name: { get_param: key_name }
@@ -165,6 +160,8 @@ resources:
       v4_subnet: { get_param: v4_subnet }
       v6_subnet: { get_param: v6_subnet }
       sec_groups: { get_param: sec_groups }
+      munin_server_v4: { get_param: munin_server_v4 }
+      munin_server_v6: { get_param: munin_server_v6 }
       db_root_password: { get_param: db_root_password }
       db_guacamole_password: { get_param: db_guacamole_password }
       guac_ip: { get_param: guacamole_ip }

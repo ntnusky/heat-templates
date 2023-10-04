@@ -1,5 +1,5 @@
 ---
-heat_template_version: 2018-08-31
+heat_template_version: wallaby
 
 description: >
   Deploy a simple Apache Guacamole setup, including an Apache webserver
@@ -50,9 +50,11 @@ parameters:
   munin_server_v4:
     type: string
     description: IPv4 address of munin hosts
+    default: "127.0.0.1/32"
   munin_server_v6:
     type: string
     description: IPv6 address of munin hosts
+    default: "::1/128"
   rproxy_flavor:
     type: string
     description: Flavor for Apache Webserver
@@ -128,6 +130,8 @@ resources:
       sec_groups_web:
         - { get_resource: sg_web_rules_v4 }
         - { get_resource: sg_web_rules_v6 }
+      munin_server_v4: { get_param: munin_server_v4 }
+      munin_server_v6: { get_param: munin_server_v6 }
       rproxy_flavor: { get_param: rproxy_flavor }
       rproxy_ip: 192.168.100.20
       admin_email: { get_param: admin_email }
@@ -153,22 +157,12 @@ resources:
   guac_net:
     type: OS::Neutron::Net
     properties:
-      name:
-        str_replace:
-          template: $env-$name
-          params:
-            $env: { get_param: environment }
-            $name: { get_param: guac_net_name }
+      name: { list_join: ['-', [ { get_param: environment }, { get_param: guac_net_name }]]}
 
   guac_subnet_v4:
     type: OS::Neutron::Subnet
     properties:
-      name:
-        str_replace:
-          template: $env-$name
-          params:
-            $env: { get_param: environment }
-            $name: guacamole-v4
+      name: { list_join: ['-', [ { get_param: environment }, guacamole-v4 ]]}
       network: { get_resource: guac_net }
       cidr: 192.168.100.0/24
       gateway_ip: 192.168.100.1
@@ -179,12 +173,7 @@ resources:
   guac_subnet_v6:
     type: OS::Neutron::Subnet
     properties:
-      name:
-        str_replace:
-          template: $env-$name
-          params:
-            $env: { get_param: environment }
-            $name: guacamole-v6
+      name: { list_join: ['-', [ { get_param: environment }, guacamole-v6 ]]}
       network: { get_resource: guac_net }
       ip_version: 6
       ipv6_address_mode: slaac

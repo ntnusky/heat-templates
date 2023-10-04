@@ -1,4 +1,4 @@
-heat_template_version: 2018-08-31
+heat_template_version: wallaby
 
 description: >
   HOT template for a Apache Guacamole server
@@ -31,6 +31,12 @@ parameters:
   sec_groups:
     type: comma_delimited_list
     description: List of default security groups
+  munin_server_v4:
+    type: string
+    description: IPv4 address of munin-server
+  munin_server_v6:
+    type: string
+    description: IPv6 address of munin-server
   db_ip:
     type: string
     description: IP address of DB server
@@ -66,7 +72,12 @@ resources:
   baseconf:
     type: OS::Heat::SoftwareConfig
     properties:
-      config: { get_file: base.bash }
+      config:
+        str_replace:
+          template: { get_file: base.txt }
+          params:
+            <%MUNIN_V4%>: { get_param: munin_server_v4 }
+            <%MUNIN_V6%>: { get_param: munin_server_v6 }
 
   appconf:
     type: OS::Heat::SoftwareConfig
