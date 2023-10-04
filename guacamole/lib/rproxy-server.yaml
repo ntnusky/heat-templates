@@ -54,6 +54,32 @@ parameters:
     description: Certificate for CA
 
 resources:
+  baseconf:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: base.bash }
+
+  appconf:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config:
+        str_replace:
+          template: { get_file: rproxy.bash }
+          params:
+            <%ADMIN_EMAIL%>: { get_param: admin_email }
+            <%GUACAMOLE_FQDN%>: { get_param: guacamole_fqdn }
+            <%GUACAMOLE_HOST%>: { get_param: guacamole_host }
+            <%TLS_KEY%>: { get_param: tls_key }
+            <%TLS_CERT%>: { get_param: tls_cert }
+            <%CERT_CHAIN%>: { get_param: cert_chain }
+
+  conf:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        - config: { get_resource: baseconf }
+        - config: { get_resource: appconf }
+
   server:
     type: OS::Nova::Server
     properties:
@@ -64,16 +90,7 @@ resources:
       networks:
         - port: { get_resource: server_port }
       user_data_format: RAW
-      user_data:
-        str_replace:
-          template: { get_file: rproxy.bash }
-          params:
-            <%ADMIN_EMAIL%>: { get_param: admin_email }
-            <%GUACAMOLE_FQDN%>: { get_param: guacamole_fqdn }
-            <%GUACAMOLE_HOST%>: { get_param: guacamole_host }
-            <%TLS_KEY%>: { get_param: tls_key }
-            <%TLS_CERT%>: { get_param: tls_cert }
-            <%CERT_CHAIN%>: { get_param: cert_chain }
+      user_data: { get_resource: conf }
 
   server_port:
     type: OS::Neutron::Port

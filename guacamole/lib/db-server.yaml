@@ -42,6 +42,29 @@ parameters:
     description: IP address of guacamole host
 
 resources:
+  baseconf:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: base.bash }
+
+  appconf:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config:
+        str_replace:
+          template: { get_file: db.bash }
+          params:
+            <%GUAC_HOST%>: { get_param: guac_ip }
+            <%DB_ROOT_PW%>: { get_param: db_root_password }
+            <%DB_GUACAMOLE_PW%>: { get_param: db_guacamole_password }
+
+  conf:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        - config: { get_resource: baseconf }
+        - config: { get_resource: appconf }
+
   server:
     type: OS::Nova::Server
     properties:
@@ -52,13 +75,7 @@ resources:
       networks:
         - port: { get_resource: server_port }
       user_data_format: RAW
-      user_data:
-        str_replace:
-          template: { get_file: db.bash }
-          params:
-            <%GUAC_HOST%>: { get_param: guac_ip }
-            <%DB_ROOT_PW%>: { get_param: db_root_password }
-            <%DB_GUACAMOLE_PW%>: { get_param: db_guacamole_password }
+      user_data: { get_resource: conf }
 
   server_port:
     type: OS::Neutron::Port

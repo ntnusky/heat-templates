@@ -63,17 +63,15 @@ parameters:
     description: Which LDAP attributes to import for a user
 
 resources:
-  server:
-    type: OS::Nova::Server
+  baseconf:
+    type: OS::Heat::SoftwareConfig
     properties:
-      name: { get_param: server_name }
-      image: { get_param: image }
-      flavor: { get_param: flavor }
-      key_name: { get_param: key_name }
-      networks:
-        - port: { get_resource: server_port }
-      user_data_format: RAW
-      user_data:
+      config: { get_file: base.bash }
+
+  appconf:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config:
         str_replace:
           template: { get_file: guacamole.bash }
           params:
@@ -87,6 +85,24 @@ resources:
             <%LDAP_MEMBER_ATTRIBUTE%>: { get_param: ldap_member_attribute }
             <%LDAP_MEMBER_ATTRIBUTE_TYPE%>: { get_param: ldap_member_attribute_type }
             <%LDAP_USER_ATTRIBUTES%>: { get_param: ldap_user_attributes }
+
+  conf:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        - config: { get_resource: baseconf }
+        - config: { get_resource: appconf }
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: server_name }
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: server_port }
+      user_data_format: RAW
+      user_data: { get_resource: conf }
 
   server_port:
     type: OS::Neutron::Port
