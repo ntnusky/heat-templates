@@ -1,5 +1,6 @@
 ---
 parameters:
+  environment: <DEPLOYMENT ENV (could be prod, test, dev, etc..)>
   key_name: <MY-KEY>
   admin_networks_v4: "x.x.x.x/NN,y.y.y.y/NN,..."
   admin_networks_v6: "2001:DB8::/32"
@@ -11,6 +12,7 @@ parameters:
   ldap_group_base: <DN FOR GROUP OU>
   ldap_group_search_filter: <LDAP SEARCH FILTER FOR GROUPS>
   guacamole_fqdn: <FQDN FOR GUACAMOLE WEB PAGE>
+  ntnu_admin_group: <NTNU BAS Group for ssh/sudo on servers>
   tls_key: <base64 encoded private key>
   tls_cert: <base64 encoded cert>
   cert_chain: <base64 encoded cert chain>
