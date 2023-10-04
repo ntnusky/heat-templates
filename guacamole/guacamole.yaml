@@ -47,6 +47,9 @@ parameters:
     type: comma_delimited_list
     description: List of IPv6 networks to allow web traffic from
     default: "::/0"
+  ntnu_admin_group:
+    type: string
+    description: BAS group for server admins, allowing ssh and sudo
   munin_server_v4:
     type: string
     description: IPv4 address of munin hosts
@@ -135,6 +138,7 @@ resources:
       rproxy_flavor: { get_param: rproxy_flavor }
       rproxy_ip: 192.168.100.20
       admin_email: { get_param: admin_email }
+      ntnu_admin_group: { get_param: ntnu_admin_group }
       guacamole_flavor: { get_param: guacamole_flavor }
       guacamole_ip: 192.168.100.21
       guacamole_fqdn: { get_param: guacamole_fqdn }

@@ -41,6 +41,9 @@ parameters:
   admin_email:
     type: string
     description: Admin email for Apache config
+  ntnu_admin_group:
+    type: string
+    description: BAS group for server admins, allowing ssh and sudo
   rproxy_ip:
     type: string
     description: Static IPv4 for reverse proxy
@@ -117,6 +120,7 @@ resources:
       munin_server_v6: { get_param: munin_server_v6 }
       external_net: { get_param: external_net }
       admin_email: { get_param: admin_email }
+      ntnu_admin_group: { get_param: ntnu_admin_group }
       guacamole_host: { get_param: guacamole_ip }
       guacamole_fqdn: { get_param: guacamole_fqdn }
       tls_key: { get_param: tls_key }
@@ -137,6 +141,7 @@ resources:
       sec_groups: { get_param: sec_groups }
       munin_server_v4: { get_param: munin_server_v4 }
       munin_server_v6: { get_param: munin_server_v6 }
+      ntnu_admin_group: { get_param: ntnu_admin_group }
       db_ip: { get_param: db_ip }
       db_password: { get_param: db_guacamole_password }
       rproxy_ip: { get_param: rproxy_ip }
@@ -162,6 +167,7 @@ resources:
       sec_groups: { get_param: sec_groups }
       munin_server_v4: { get_param: munin_server_v4 }
       munin_server_v6: { get_param: munin_server_v6 }
+      ntnu_admin_group: { get_param: ntnu_admin_group }
       db_root_password: { get_param: db_root_password }
       db_guacamole_password: { get_param: db_guacamole_password }
       guac_ip: { get_param: guacamole_ip }

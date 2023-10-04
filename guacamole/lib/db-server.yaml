@@ -31,6 +31,9 @@ parameters:
   sec_groups:
     type: comma_delimited_list
     description: List of default security groups
+  ntnu_admin_group:
+    type: string
+    description: BAS group for server admins, allowing ssh and sudo
   munin_server_v4:
     type: string
     description: IPv4 address of munin-server
@@ -57,6 +60,7 @@ resources:
           params:
             <%MUNIN_V4%>: { get_param: munin_server_v4 }
             <%MUNIN_V6%>: { get_param: munin_server_v6 }
+            <%NTNU_ADMIN_GROUP%>: { get_param: ntnu_admin_group }
 
   appconf:
     type: OS::Heat::SoftwareConfig

@@ -31,18 +31,18 @@ write_files:
     mode: '0400'
   - path: /etc/nslcd.conf
     content: |
-      filter passwd (ntnuMemberOf=ie-iik_guacamole_test_serveradmin)
+      filter passwd (ntnuMemberOf=<%NTNU_ADMIN_GROUP%>)
       # Dummy comment to prevent errors
     append: true
   - path: /etc/sudoers.d/10_administrators
     content: |
-      %ie-iik_guacamole_test_serveradmin ALL=(ALL) NOPASSWD:ALL
+      %<%NTNU_ADMIN_GROUP%> ALL=(ALL) NOPASSWD:ALL
     owner: root:root
     mode: '0440'
   - path: /etc/ssh/sshd_config
     content: |
       AllowUsers ubuntu
-      Match group ie-iik_guacamole_test_serveradmin
+      Match group <%NTNU_ADMIN_GROUP%>
         AllowUsers *
     append: true
 
