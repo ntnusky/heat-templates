@@ -73,11 +73,17 @@ resources:
             <%DB_ROOT_PW%>: { get_param: db_root_password }
             <%DB_GUACAMOLE_PW%>: { get_param: db_guacamole_password }
 
+  volumeconf:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config: { get_file: mysql-volume-mount.txt }
+
   conf:
     type: OS::Heat::MultipartMime
     properties:
       parts:
         - config: { get_resource: baseconf }
+        - config: { get_resource: volumeconf }
         - config: { get_resource: appconf }
 
   server:
@@ -101,3 +107,15 @@ resources:
           ip_address: { get_param: ip }
         - subnet_id: { get_param: v6_subnet }
       security_groups: { get_param: sec_groups }
+
+  mysql_volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: 50
+      volume_type: SSD-300
+
+  mysql_volume_attachment:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: server }
+      volume_id: { get_resource: mysql_volume }

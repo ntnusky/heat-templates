@@ -30,7 +30,7 @@ HTTP_HOST_PATTERN=$(echo ${FQDN} | sed 's|\.|\\.|g')
 
 # Install and configure apache2
 apt update
-apt -y install apache2
+apt -y install apache2 liblwp-protocol-https-perl
 a2enmod proxy proxy_wstunnel proxy_http proxy_http2 rewrite ssl headers
 a2dissite 000-default
 
@@ -121,3 +121,14 @@ EOF
 
 a2ensite ${FQDN}.conf
 systemctl restart apache2
+
+# Munin plugins
+ln -s /usr/share/munin/plugins/apache_* /etc/munin/plugins/
+cat << EOF > /etc/munin/plugin-conf.d/apache
+[apache_*]
+  env.url   https://${FQDN}:%d/server-status?auto
+  env.ports 443
+
+[http_loadtime]
+   env.target https://${FQDN}/guacamole/#/
+EOF
