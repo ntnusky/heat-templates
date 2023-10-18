@@ -76,9 +76,11 @@ parameters:
   db_root_password:
     type: string
     description: MySQL root password
+    hidden: true
   db_guacamole_password:
     type: string
     description: MySQL guacamole_user password
+    hidden: true
   ldap_host:
     type: string
     description: LDAP host to auth with
@@ -106,6 +108,7 @@ parameters:
   tls_key:
     type: string
     description: Private key for TLS cert
+    hidden: true
   tls_cert:
     type: string
     description: TLS certificate
