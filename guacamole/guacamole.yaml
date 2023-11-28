@@ -61,11 +61,11 @@ parameters:
   rproxy_flavor:
     type: string
     description: Flavor for Apache Webserver
-    default: gx1.1c2r
+    default: gx1.2c4r
   guacamole_flavor:
     type: string
     description: Flavor for Apache Guacamole server
-    default: gx3.2c8r
+    default: gx3.8c32r
   guacamole_fqdn:
     type: string
     description: FQDN for guacamole web access

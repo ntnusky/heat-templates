@@ -112,7 +112,7 @@ resources:
     type: OS::Cinder::Volume
     properties:
       size: 50
-      volume_type: SSD-300
+      volume_type: SSD-1K
 
   mysql_volume_attachment:
     type: OS::Cinder::VolumeAttachment
