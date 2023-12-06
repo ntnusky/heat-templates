@@ -211,44 +211,36 @@ resources:
     properties:
       description: Common rules for Linux servers
       rules:
-        repeat:
-          for_each:
-            <%net%>: { get_param: admin_networks_v4 }
-          template:
-            protocol: tcp
-            port_range_min: 22
-            port_range_max: 22
-            remote_ip_prefix: <%net%>
+        list_concat:
+          - - protocol: icmp
+              remote_ip_prefix: '0.0.0.0/0'
+          - repeat:
+              for_each:
+                <%net%>: { get_param: admin_networks_v4 }
+              template:
+                protocol: tcp
+                port_range_min: 22
+                port_range_max: 22
+                remote_ip_prefix: <%net%>
 
   sg_linux_v6:
     type: OS::Neutron::SecurityGroup
     properties:
       description: Common rules for Linux servers
       rules:
-        repeat:
-          for_each:
-            <%net%>: { get_param: admin_networks_v6 }
-          template:
-            protocol: tcp
-            ethertype: IPv6
-            port_range_min: 22
-            port_range_max: 22
-            remote_ip_prefix: <%net%>
-
-  sg_linux_in4_icmp:
-    type: OS::Neutron::SecurityGroupRule
-    properties:
-      security_group: { get_resource: sg_linux_v4 }
-      protocol: icmp
-      remote_ip_prefix: 0.0.0.0/0
-
-  sg_linux_in6_icmp:
-    type: OS::Neutron::SecurityGroupRule
-    properties:
-      security_group: { get_resource: sg_linux_v6 }
-      ethertype: IPv6
-      protocol: icmpv6
-      remote_ip_prefix: ::/0
+        list_concat:
+          - - protocol: icmpv6
+              ethertype: IPv6
+              remote_ip_prefix: '::/0'
+          - repeat:
+              for_each:
+                <%net%>: { get_param: admin_networks_v6 }
+              template:
+                protocol: tcp
+                ethertype: IPv6
+                port_range_min: 22
+                port_range_max: 22
+                remote_ip_prefix: <%net%>
 
   sg_web_rules_v4:
     type: OS::Neutron::SecurityGroup
