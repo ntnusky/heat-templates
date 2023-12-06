@@ -35,6 +35,9 @@ a2enmod proxy proxy_wstunnel proxy_http proxy_http2 rewrite ssl headers
 a2dissite 000-default
 
 cat << EOF > /etc/apache2/sites-available/${FQDN}.conf
+<IfModule mpm_event_module>
+  MaxRequestWorkers 400
+</IfModule>
 <VirtualHost *:80>
 	ServerName $FQDN
 	ServerAdmin $ADMIN_EMAIL
