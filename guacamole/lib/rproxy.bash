@@ -36,7 +36,8 @@ a2dissite 000-default
 
 cat << EOF > /etc/apache2/sites-available/${FQDN}.conf
 <IfModule mpm_event_module>
-  MaxRequestWorkers 400
+  ServerLimit 128
+  MaxRequestWorkers 3200
 </IfModule>
 <VirtualHost *:80>
 	ServerName $FQDN
