@@ -25,6 +25,13 @@ resources:
       name: { get_param: ruleset_name }
       rules:
         list_concat:
+          - - protocol: icmp
+              remote_ip_prefix: '0.0.0.0/0'
+              direction: 'egress'
+            - protocol: icmp
+              remote_ip_prefix: '::/0'
+              direction: 'egress'
+              ethertype: 'IPv6'
           - repeat:
               for_each:
                 <%net%>: { get_param: ipv4_networks }
