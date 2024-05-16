@@ -1,0 +1,13 @@
+---
+parameters:
+  ruleset_name: "BRA NAVN HER"
+  ipv4_networks:
+    - '10.0.0.0/8'
+    - '192.168.0.0/16'
+
+  ipv6_networks:
+    - '2001:db8::/32'
+    - '2001:db8::1/128'
+
+  tcp_ports: "22,33,44"
+  udp_ports: "55,66,77"

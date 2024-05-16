@@ -1,0 +1,67 @@
+---
+heat_template_version: wallaby
+
+description: Create security groups for given ports and networks
+
+parameters:
+  ruleset_name:
+    type: string
+  ipv4_networks:
+    type: json
+  ipv6_networks:
+    type: json
+  tcp_ports:
+    type: comma_delimited_list
+    default: []
+  udp_ports:
+    type: comma_delimited_list
+    default: []
+
+resources:
+  sg:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: { list_join: [' ', [ 'Rules for', { get_param: ruleset_name }]]}
+      name: { get_param: ruleset_name }
+      rules:
+        list_concat:
+          - repeat:
+              for_each:
+                <%net%>: { get_param: ipv4_networks }
+                <%port%>: { get_param: tcp_ports }
+              template:
+                protocol: tcp
+                ethertype: IPv4
+                port_range_min: <%port%>
+                port_range_max: <%port%>
+                remote_ip_prefix: <%net%>
+          - repeat:
+              for_each:
+                <%net%>: { get_param: ipv4_networks }
+                <%port%>: { get_param: udp_ports }
+              template:
+                protocol: udp
+                ethertype: IPv4
+                port_range_min: <%port%>
+                port_range_max: <%port%>
+                remote_ip_prefix: <%net%>
+          - repeat:
+              for_each:
+                <%net%>: { get_param: ipv6_networks }
+                <%port%>: { get_param: tcp_ports }
+              template:
+                protocol: tcp
+                ethertype: IPv6
+                port_range_min: <%port%>
+                port_range_max: <%port%>
+                remote_ip_prefix: <%net%>
+          - repeat:
+              for_each:
+                <%net%>: { get_param: ipv6_networks }
+                <%port%>: { get_param: udp_ports }
+              template:
+                protocol: udp
+                ethertype: IPv6
+                port_range_min: <%port%>
+                port_range_max: <%port%>
+                remote_ip_prefix: <%net%>
