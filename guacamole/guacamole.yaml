@@ -69,6 +69,10 @@ parameters:
   guacamole_fqdn:
     type: string
     description: FQDN for guacamole web access
+  guacamole_version:
+    type: string
+    description: Guacamole version
+    default: "latest"
   db_flavor:
     type: string
     description: Flavor for MySQL server
@@ -145,6 +149,7 @@ resources:
       guacamole_flavor: { get_param: guacamole_flavor }
       guacamole_ip: 192.168.100.21
       guacamole_fqdn: { get_param: guacamole_fqdn }
+      guacamole_version: { get_param: guacamole_version }
       db_flavor: { get_param: db_flavor }
       db_ip: 192.168.100.22
       db_root_password: { get_param: db_root_password }

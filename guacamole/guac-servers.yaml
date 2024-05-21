@@ -68,6 +68,9 @@ parameters:
   guacamole_fqdn:
     type: string
     description: FQDN for guacamole web access
+  guacamole_version:
+    type: string
+    description: Version of Guacamole
   db_ip:
     type: string
     description: Static IPv4 for MySQL server
@@ -145,6 +148,7 @@ resources:
       db_ip: { get_param: db_ip }
       db_password: { get_param: db_guacamole_password }
       rproxy_ip: { get_param: rproxy_ip }
+      guacamole_version: { get_param: guacamole_version }
       ldap_host: { get_param: ldap_host }
       ldap_user_base: { get_param: ldap_user_base }
       ldap_group_base: { get_param: ldap_group_base }

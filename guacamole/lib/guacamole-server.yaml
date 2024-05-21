@@ -49,6 +49,9 @@ parameters:
   rproxy_ip:
     type: string
     description: IP address of DB server
+  guacamole_version:
+    type: string
+    description: Version of guacamole
   ldap_host:
     type: string
     description: LDAP host to auth with
@@ -93,6 +96,7 @@ resources:
             <%DBHOST%>: { get_param: db_ip }
             <%DBPASSWORD%>: { get_param: db_password }
             <%RPROXY%>: { get_param: rproxy_ip }
+            <%GUACVERSION%>: { get_param: guacamole_version }
             <%LDAP_HOST%>: { get_param: ldap_host }
             <%LDAP_USER_BASE%>: { get_param: ldap_user_base }
             <%LDAP_GROUP_BASE%>: { get_param: ldap_group_base }

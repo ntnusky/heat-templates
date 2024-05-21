@@ -14,7 +14,7 @@ cat << EOF > /home/ubuntu/guacamole/docker-compose.yaml
 ---
 services:
   guacamole:
-    image: guacamole/guacamole
+    image: guacamole/guacamole:<%GUACVERSION%>
     container_name: guacamole
     ports:
       - 8080:8080
@@ -24,13 +24,21 @@ services:
       - guac-net
     env_file: guacamole-vars.env
     restart: always
+    ulimits:
+      nofile:
+        soft: "65536"
+        hard: "65536"
 
   guacd:
-    image: guacamole/guacd
+    image: guacamole/guacd:<%GUACVERSION%>
     container_name: guacd
     networks:
       - guac-net
     restart: always
+    ulimits:
+      nofile:
+        soft: "65536"
+        hard: "65536"
 
 networks:
   guac-net:
