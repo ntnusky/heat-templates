@@ -34,12 +34,9 @@ parameters:
   ntnu_admin_group:
     type: string
     description: BAS group for server admins, allowing ssh and sudo
-  munin_server_v4:
+  zabbix_servers:
     type: string
-    description: IPv4 address of munin-server
-  munin_server_v6:
-    type: string
-    description: IPv6 address of munin-server
+    description: String of Zabbix Server IPs. Comma-separated
   db_root_password:
     type: string
     description: Root password for MySQL
@@ -58,8 +55,7 @@ resources:
         str_replace:
           template: { get_file: base.txt }
           params:
-            <%MUNIN_V4%>: { get_param: munin_server_v4 }
-            <%MUNIN_V6%>: { get_param: munin_server_v6 }
+            <%ZABBIX_SERVERS%>: { get_param: zabbix_servers }
             <%NTNU_ADMIN_GROUP%>: { get_param: ntnu_admin_group }
 
   appconf:

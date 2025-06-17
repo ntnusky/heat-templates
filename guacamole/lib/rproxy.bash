@@ -36,6 +36,9 @@ a2dissite 000-default
 
 cat << EOF > /etc/apache2/sites-available/${FQDN}.conf
 <IfModule mpm_event_module>
+  StartServers 3
+  MinSpareThreads 75
+  MaxSpareThreads 250
   ServerLimit 128
   MaxRequestWorkers 3200
 </IfModule>
@@ -125,14 +128,3 @@ EOF
 
 a2ensite ${FQDN}.conf
 systemctl restart apache2
-
-# Munin plugins
-ln -s /usr/share/munin/plugins/apache_* /etc/munin/plugins/
-cat << EOF > /etc/munin/plugin-conf.d/apache
-[apache_*]
-  env.url   https://${FQDN}:%d/server-status?auto
-  env.ports 443
-
-[http_loadtime]
-   env.target https://${FQDN}/guacamole/#/
-EOF

@@ -70,13 +70,3 @@ EOF
 
 chown -R ubuntu:ubuntu /home/ubuntu/guacamole
 cd /home/ubuntu/guacamole; sudo -u ubuntu docker-compose up -d
-
-# Munin plugins
-wget https://raw.githubusercontent.com/munin-monitoring/contrib/master/plugins/docker/docker_ -O /usr/share/munin/plugins/docker_
-chmod +x /usr/share/munin/plugins/docker_
-ln -s /usr/share/munin/plugins/docker_ /etc/munin/plugins/docker_multi
-
-cat << EOF > /etc/munin/plugin-conf.d/docker
-[docker_*]
-  user root
-EOF

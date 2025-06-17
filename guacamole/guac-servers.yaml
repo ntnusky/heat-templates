@@ -32,12 +32,9 @@ parameters:
   sec_groups_web:
     type: comma_delimited_list
     description: Security groups for web traffic
-  munin_server_v4:
+  zabbix_servers:
     type: string
-    description: IPv4 address of munin-server
-  munin_server_v6:
-    type: string
-    description: IPv6 address of munin-server
+    description: String of Zabbix Server IPs. Comma-separated
   admin_email:
     type: string
     description: Admin email for Apache config
@@ -119,8 +116,7 @@ resources:
       v6_subnet: { get_param: v6_subnet }
       sec_groups:
         list_join: [',', {get_param: sec_groups}, {get_param: sec_groups_web}]
-      munin_server_v4: { get_param: munin_server_v4 }
-      munin_server_v6: { get_param: munin_server_v6 }
+      zabbix_servers: { get_param: zabbix_servers }
       external_net: { get_param: external_net }
       admin_email: { get_param: admin_email }
       ntnu_admin_group: { get_param: ntnu_admin_group }
@@ -142,8 +138,7 @@ resources:
       v4_subnet: { get_param: v4_subnet }
       v6_subnet: { get_param: v6_subnet }
       sec_groups: { get_param: sec_groups }
-      munin_server_v4: { get_param: munin_server_v4 }
-      munin_server_v6: { get_param: munin_server_v6 }
+      zabbix_servers: { get_param: zabbix_servers }
       ntnu_admin_group: { get_param: ntnu_admin_group }
       db_ip: { get_param: db_ip }
       db_password: { get_param: db_guacamole_password }
@@ -169,8 +164,7 @@ resources:
       v4_subnet: { get_param: v4_subnet }
       v6_subnet: { get_param: v6_subnet }
       sec_groups: { get_param: sec_groups }
-      munin_server_v4: { get_param: munin_server_v4 }
-      munin_server_v6: { get_param: munin_server_v6 }
+      zabbix_servers: { get_param: zabbix_servers }
       ntnu_admin_group: { get_param: ntnu_admin_group }
       db_root_password: { get_param: db_root_password }
       db_guacamole_password: { get_param: db_guacamole_password }

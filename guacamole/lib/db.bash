@@ -47,11 +47,3 @@ EOS
 wget -q https://repo.it.ntnu.no/guacamole/initdb.sql -O /tmp/initdb.sql
 mysql -u root -p${pw} guacamole_db < /tmp/initdb.sql
 rm /tmp/initdb.sql
-
-# Munin plugins
-for i in $(/usr/share/munin/plugins/mysql_ suggest); do ln -s /usr/share/munin/plugins/mysql_ /etc/munin/plugins/mysql_$i; done
-rm /etc/munin/plugins/mysql_replication /etc/munin/plugins/mysql_binlog_groupcommit /etc/munin/plugins/mysql_innodb_io_pend
-cat << EOF > /etc/munin/plugin-conf.d/mysql
-[mysql_*]
-  env.mysqlpassword ${pw}
-EOF
