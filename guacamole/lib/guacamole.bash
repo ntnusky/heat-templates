@@ -49,7 +49,7 @@ cat << EOF > /home/ubuntu/guacamole/guacamole-vars.env
 GUACD_HOSTNAME=guacd
 MYSQL_HOSTNAME=<%DBHOST%>
 MYSQL_DATABASE=guacamole_db
-MYSQL_USER=guacamole_user
+MYSQL_USERNAME=guacamole_user
 MYSQL_PASSWORD=<%DBPASSWORD%>
 MYSQL_AUTO_CREATE_ACCOUNTS=true
 LDAP_HOSTNAME=<%LDAP_HOST%>
