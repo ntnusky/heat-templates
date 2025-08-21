@@ -76,7 +76,7 @@ parameters:
   guacamole_version:
     type: string
     description: Guacamole version
-    default: "latest"
+    default: "1.6.0"
   db_flavor:
     type: string
     description: Flavor for MySQL server
