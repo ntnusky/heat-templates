@@ -7,6 +7,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
 apt update && apt -y install docker-ce docker-compose-plugin
 usermod -aG docker ubuntu
+usermod -aG docker zabbix
 
 # Run the guacamole container
 mkdir /home/ubuntu/guacamole
