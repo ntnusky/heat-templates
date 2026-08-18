@@ -15,6 +15,8 @@ DEBIAN_FRONTEND=noninteractive apt -y install mysql-server pwgen libdbd-mysql-pe
 pw='<%DB_ROOT_PW%>'
 guac_pw='<%DB_GUACAMOLE_PW%>'
 ip=$(hostname -I | cut -d' ' -f1)
+echo -e "[mysqld]\nmysql_native_password=ON" >> /etc/mysql/conf.d/mysql.cnf
+systemctl restart mysql.service
 mysql -sfu root <<EOS
 -- set root password
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$pw';
@@ -34,7 +36,6 @@ echo "MySQL root password: $pw" >> /home/ubuntu/install.log
 echo "MySQL guacamole_user password: $guac_pw" >> /home/ubuntu/install.log
 
 sed -i "s/127.0.0.1/$ip,127.0.0.1/g" /etc/mysql/mysql.conf.d/mysqld.cnf
-echo -e "[mysqld]\nmysql_native_password=ON" >> /etc/mysql/conf.d/mysql.cnf
 systemctl restart mysql.service
 
 # Creating what's needed for guacamole
