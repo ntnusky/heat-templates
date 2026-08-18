@@ -5,7 +5,7 @@ apt update
 apt install apt-transport-https ca-certificates curl software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
-apt update && apt -y install docker-ce docker-compose
+apt update && apt -y install docker-ce docker-compose-plugin
 usermod -aG docker ubuntu
 
 # Run the guacamole container
@@ -49,7 +49,7 @@ cat << EOF > /home/ubuntu/guacamole/guacamole-vars.env
 GUACD_HOSTNAME=guacd
 MYSQL_HOSTNAME=<%DBHOST%>
 MYSQL_DATABASE=guacamole_db
-MYSQL_USERNAME=guacamole_user
+MYSQL_USER=guacamole_user
 MYSQL_PASSWORD=<%DBPASSWORD%>
 MYSQL_AUTO_CREATE_ACCOUNTS=true
 LDAP_HOSTNAME=<%LDAP_HOST%>
@@ -69,4 +69,4 @@ EXTENSION_PRIORITY=ldap,mysql
 EOF
 
 chown -R ubuntu:ubuntu /home/ubuntu/guacamole
-cd /home/ubuntu/guacamole; sudo -u ubuntu docker-compose up -d
+cd /home/ubuntu/guacamole; sudo -u ubuntu docker compose up -d

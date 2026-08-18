@@ -1,7 +1,7 @@
 heat_template_version: wallaby
 
 description: >
-  HOT template for a Apache webserver acting as a rproxy for guacamole
+  HOT template for an Nginx webserver acting as a rproxy for guacamole
 
 parameters:
   server_name:
@@ -40,9 +40,6 @@ parameters:
   external_net:
     type: string
     description: Name or ID of the floating IP pool
-  admin_email:
-    type: string
-    description: Admin email for Apache config
   guacamole_fqdn:
     type: string
     description: FQDN for guacamole web access
@@ -75,9 +72,8 @@ resources:
     properties:
       config:
         str_replace:
-          template: { get_file: rproxy.bash }
+          template: { get_file: rproxy-nginx.bash }
           params:
-            <%ADMIN_EMAIL%>: { get_param: admin_email }
             <%GUACAMOLE_FQDN%>: { get_param: guacamole_fqdn }
             <%GUACAMOLE_HOST%>: { get_param: guacamole_host }
             <%TLS_KEY%>: { get_param: tls_key }

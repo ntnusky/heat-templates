@@ -1,14 +1,14 @@
 #cloud-config
 disk_setup:
-  /dev/vdb:
-    table_type: 'gpt'
-    layout: True
-    overwrite: True
+  /dev/sdb:
+    table_type: gpt
+    layout: true
+    overwrite: true
 
 fs_setup:
-  - device: '/dev/vdb'
-    filesystem: 'ext4'
-    partition: 'auto'
+  - device: /dev/sdb1
+    filesystem: ext4
+    partition: auto
 
 mounts:
- - [ /dev/vdb1, /var/lib/mysql, "ext4", "defaults", "0", "1" ]
+ - [ /dev/sdb1, /var/lib/mysql, "ext4", "defaults", "0", "1" ]

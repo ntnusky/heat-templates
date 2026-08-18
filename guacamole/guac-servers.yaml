@@ -35,9 +35,6 @@ parameters:
   zabbix_servers:
     type: string
     description: String of Zabbix Server IPs. Comma-separated
-  admin_email:
-    type: string
-    description: Admin email for Apache config
   ntnu_admin_group:
     type: string
     description: BAS group for server admins, allowing ssh and sudo
@@ -118,7 +115,6 @@ resources:
         list_join: [',', {get_param: sec_groups}, {get_param: sec_groups_web}]
       zabbix_servers: { get_param: zabbix_servers }
       external_net: { get_param: external_net }
-      admin_email: { get_param: admin_email }
       ntnu_admin_group: { get_param: ntnu_admin_group }
       guacamole_host: { get_param: guacamole_ip }
       guacamole_fqdn: { get_param: guacamole_fqdn }

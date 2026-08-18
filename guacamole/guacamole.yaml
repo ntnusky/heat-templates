@@ -2,7 +2,7 @@
 heat_template_version: wallaby
 
 description: >
-  Deploy a simple Apache Guacamole setup, including an Apache webserver
+  Deploy a simple Apache Guacamole setup, including an nginx webserver
   as reverse proxy, the Apache Guacamole software itself, and a MySQL database
 
 parameters:
@@ -15,7 +15,7 @@ parameters:
   os_image:
     type: string
     description: Default OS for all server
-    default: Ubuntu Server 22.04 LTS (Jammy Jellyfish) amd64
+    default: Ubuntu Server 26.04 LTS (Resolute Raccoon) amd64
   external_net:
     type: string
     description: ID or name of external net for router
@@ -35,10 +35,6 @@ parameters:
     type: comma_delimited_list
     label: admin_networks_v6
     description: A list of IPv6 networks that will be allowed SSH access
-  admin_email:
-    type: string
-    description: Admin email for Apache config
-    default: admin@example.com
   allow_web_from_v4:
     type: comma_delimited_list
     description: List of IPv4 networks to allow web traffic from
@@ -147,7 +143,6 @@ resources:
       zabbix_servers: { get_param: zabbix_servers }
       rproxy_flavor: { get_param: rproxy_flavor }
       rproxy_ip: 192.168.100.20
-      admin_email: { get_param: admin_email }
       ntnu_admin_group: { get_param: ntnu_admin_group }
       guacamole_flavor: { get_param: guacamole_flavor }
       guacamole_ip: 192.168.100.21
