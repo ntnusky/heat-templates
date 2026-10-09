@@ -18,7 +18,7 @@ cat << EOF > /etc/ssl/certs/${FQDN}.pem
 $(echo -n "${TLS_CERT}" | base64 -d)
 EOF
 
-cat << EOF > /etc/ssl/certs/cert-chain.pem
+cat << EOF >> /etc/ssl/certs/${FQDN}.pem
 $(echo -n "${CERT_CHAIN}" | base64 -d)
 EOF
 
